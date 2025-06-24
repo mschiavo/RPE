@@ -1,109 +1,56 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Statistiche RPE</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<head><meta charset="UTF-8"><title>Statistiche RPE</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen p-6">
-
-  <div id="loader" class="text-center my-4">
-  <div class="flex justify-center items-center">
-    <svg class="animate-spin h-6 w-6 text-blue-500 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-    </svg>
-    Caricamento in corso...
-  </div>
-</div>
-
-  <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
-    <div class="flex justify-between items-center mb-4">
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <div class="flex justify-between mb-6">
       <h1 class="text-2xl font-bold">Statistiche Allenamenti</h1>
-      <a href="index.html" class="text-blue-600 hover:underline">← Torna all'inserimento</a>
+      <a href="index.html" class="text-blue-600 hover:underline">← Inserimento</a>
     </div>
-
-    <div id="loader" class="text-center my-4">⏳ Caricamento statistiche...</div>
-
-    <div class="grid md:grid-cols-2 gap-6 hidden" id="statistiche">
-      <div>
-        <h2 class="font-semibold mb-2">RPE Totali per Atleta</h2>
-        <canvas id="chartRPE"></canvas>
-      </div>
-      <div>
-        <h2 class="font-semibold mb-2">Durata Totale per Ruolo</h2>
-        <canvas id="chartDurata"></canvas>
-      </div>
+    <div id="loader" class="flex justify-center py-4">
+      <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="..."><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+    </div>
+    <div id="charts" class="hidden space-y-8">
+      <canvas id="chartRPE"></canvas>
+      <canvas id="chartDurata"></canvas>
     </div>
   </div>
+<script>
+const API = 'INSERISCI_URL_APPS_SCRIPT';
+Promise.all([
+  fetch(`${API}?action=get_metadata`).then(r=>r.json()),
+  fetch(`${API}?action=get_stats`).then(r=>r.json())
+]).then(([meta, stats]) => {
+  const mAt = Object.fromEntries(meta.atlete.map(a=>[a[0], `${a[1]} ${a[2]}`]));
+  const ruol = Object.fromEntries(meta.atlete.map(a=>[a[0], a[5]]));
+  const durPerRuolo={}, rpePerAtleta={};
 
-  <script>
-    const API_URL = 'https://script.google.com/macros/library/d/10zbobOt9lQNeFxgU6UYr7a3ZDJvur6iZ4lfqrevTwla5LFy9gvRc5if1/1';
+  stats.rpe_join.forEach(r=>{
+    const idA = r[1], idAl = r[2], idR = r[3];
+    const dur = stats.allenamenti.find(a=>a[0]==idAl)?.[2] || 0;
+    rpePerAtleta[idA] = (rpePerAtleta[idA]||0) + parseInt(meta.rpe.find(rr=>rr[0]==idR)[1]);
+    durPerRuolo[ruol[idA]] = (durPerRuolo[ruol[idA]]||0) + parseInt(dur);
+  });
 
-    fetch(API_URL + '?action=get_data')
-      .then(r => r.json())
-      .then(data => {
-        const atleteMap = Object.fromEntries(data.atlete.map(a => [a[0], `${a[1]} ${a[2]}`]));
-        const ruoloMap = Object.fromEntries(data.atlete.map(a => [a[0], a[5]]));
-        const rpeRows = data.rpe_atleta_allenamento;
-        const allenamenti = Object.fromEntries(data.allenamenti.map(a => [a[0], { data: a[1], durata: parseInt(a[2]) }]));
+  document.getElementById("loader").classList.add("hidden");
+  document.getElementById("charts").classList.remove("hidden");
 
-        const rpePerAtleta = {};
-        const durataPerRuolo = {};
-
-        for (const r of rpeRows) {
-          const atletaId = r[1];
-          const allenamento = allenamenti[r[2]];
-          const ruolo = ruoloMap[atletaId];
-          const rpeVal = parseInt(data.rpe.find(e => e[0] === r[3])[1]);
-
-          rpePerAtleta[atletaId] = (rpePerAtleta[atletaId] || 0) + rpeVal;
-          durataPerRuolo[ruolo] = (durataPerRuolo[ruolo] || 0) + allenamento.durata;
-        }
-
-        document.getElementById("loader").classList.add("hidden");
-        document.getElementById("statistiche").classList.remove("hidden");
-
-        // Chart RPE per Atleta
-        new Chart(document.getElementById('chartRPE'), {
-          type: 'bar',
-          data: {
-            labels: Object.keys(rpePerAtleta).map(id => atleteMap[id]),
-            datasets: [{
-              label: 'RPE Totale',
-              data: Object.values(rpePerAtleta),
-              backgroundColor: '#60a5fa'
-            }]
-          },
-          options: { responsive: true }
-        });
-
-        // Chart Durata per Ruolo
-        new Chart(document.getElementById('chartDurata'), {
-          type: 'pie',
-          data: {
-            labels: Object.keys(durataPerRuolo),
-            datasets: [{
-              label: 'Durata Totale (min)',
-              data: Object.values(durataPerRuolo),
-              backgroundColor: ['#facc15', '#34d399', '#a78bfa', '#f87171']
-            }]
-          },
-          options: { responsive: true }
-        });
-      })
-      .catch(err => {
-        document.getElementById("loader").innerText = "Errore nel caricamento dei dati.";
-        console.error(err);
-      });
-    Promise.all([
-  fetch(`${API_URL}?action=get_metadata`).then(r => r.json()),
-  fetch(`${API_URL}?action=get_stats`).then(r => r.json())
-]).then(([metadata, stats]) => {
-  // costruzione dei grafici
+  new Chart(document.getElementById('chartRPE'), {
+    type: 'bar',
+    data: { labels: Object.keys(rpePerAtleta).map(k=>mAt[k]), datasets:[{label:'RPE Totale',data:Object.values(rpePerAtleta),backgroundColor:'#60a5fa'}] },
+    options:{responsive:true}
+  });
+  new Chart(document.getElementById('chartDurata'), {
+    type:'pie',
+    data:{ labels:Object.keys(durPerRuolo), datasets:[{data:Object.values(durPerRuolo),
+      backgroundColor:['#3b82f6','#34d399','#f59e0b','#ef4444']}]
+    },
+    options:{responsive:true}
+  });
 });
-
-  </script>
+</script>
 </body>
 </html>
