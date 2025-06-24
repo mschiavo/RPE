@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Statistiche RPE</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    canvas { margin: 20px 0; max-width: 600px; }
+  </style>
+</head>
+<body>
+  <h1>Statistiche RPE</h1>
+  <label for="atletaSelect">Filtra per atleta:</label>
+  <select id="atletaSelect" onchange="renderCharts()"></select>
+
+  <canvas id="mediaMensile"></canvas>
+  <canvas id="mediaPerRuolo"></canvas>
+
+  <script>
+    const API_URL = 'INSERISCI_URL_APPS_SCRIPT';
+    let dati = {}, atleteMap = {}, ruoloMap = {};
+
+    fetch(API_URL + '?action=get_stats')
+      .then(r => r.json())
+      .then(data => {
+        dati = data;
+        atleteMap = Object.fromEntries(data.atlete.map(a => [a[0], `${a[1]} ${a[2]}`]));
+        ruoloMap = Object.fromEntries(data.atlete.map(a => [a[0], a[5]]));
+        popolaSelect();
+        renderCharts();
+      });
+
+    function popolaSelect() {
+      const select = document.getElementById('atletaSelect');
+      select.innerHTML = `<option value="tutti">Tutti</option>` +
+        dati.atlete.map(a => `<option value="${a[0]}">${a[1]} ${a[2]}</option>`).join('');
+    }
+
+    function renderCharts() {
+      const filtro = document.getElementById('atletaSelect').value;
+
+      const merged = dati.registrazioni.map(r => {
+        const allenamento = dati.allenamenti.find(a => a[0] == r[2]);
+        return {
+          id_atleta: r[1],
+          data: allenamento ? allenamento[1] : "",
+          mese: allenamento ? allenamento[1].slice(0, 7) : "",
+          rpe: parseInt(dati.rpe?.find(rr => rr[0] == r[3])?.[1]) || parseInt(r[3]),
+          ruolo: ruoloMap[r[1]]
+        };
+      }).filter(r => filtro === "tutti" || r.id_atleta === filtro);
+
+      const perMese = {};
+      const perRuolo = {};
+
+      merged.forEach(r => {
+        perMese[r.mese] = perMese[r.mese] || [];
+        perMese[r.mese].push(r.rpe);
+
+        perRuolo[r.ruolo] = perRuolo[r.ruolo] || [];
+        perRuolo[r.ruolo].push(r.rpe);
+      });
+
+      const medieMese = Object.entries(perMese).map(([k, arr]) => [k, media(arr)]);
+      const medieRuolo = Object.entries(perRuolo).map(([k, arr]) => [k, media(arr)]);
+
+      renderChart("mediaMensile", "RPE medio per mese", medieMese);
+      renderChart("mediaPerRuolo", "RPE medio per ruolo", medieRuolo);
+    }
+
+    function renderChart(id, label, dati) {
+      const ctx = document.getElementById(id).getContext('2d');
+      if (window[id]) window[id].destroy();
+      window[id] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dati.map(d => d[0]),
+          datasets: [{ label, data: dati.map(d => d[1]), backgroundColor: 'steelblue' }]
+        },
+        options: { responsive: true }
+      });
+    }
+
+    function media(arr) {
+      return arr.reduce((a, b) => a + b, 0) / arr.length;
+    }
+  </script>
+</body>
+</html>
