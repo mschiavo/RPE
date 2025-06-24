@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>RPE Atlete</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .card { border: 1px solid #ccc; padding: 10px; border-radius: 10px; width: 200px; }
+    select, input { width: 100%; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Registrazione RPE</h1>
+  <label>Durata allenamento (minuti): <input id="durata" type="number"></label>
+  <div id="atleteContainer" class="grid"></div>
+  <button onclick="inviaDati()">Invia</button>
+
+  <script>
+    const API_URL = 'INSERISCI_URL_APPS_SCRIPT';
+
+    let atlete = [], rpeList = [];
+
+    fetch(API_URL + '?action=get_data')
+      .then(r => r.json())
+      .then(data => {
+        atlete = data.atlete;
+        rpeList = data.rpe;
+        renderAtlete();
+      });
+
+    function renderAtlete() {
+      const container = document.getElementById('atleteContainer');
+      atlete.forEach(atleta => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          <strong>${atleta[1]} ${atleta[2]}</strong><br>
+          <label>RPE:
+            <select data-id="${atleta[0]}">
+              ${rpeList.map(r => `<option value="${r[0]}">${r[1]} - ${r[2]}</option>`).join('')}
+            </select>
+          </label>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function inviaDati() {
+      const durata = document.getElementById('durata').value;
+      const dataOggi = new Date().toISOString().split('T')[0];
+
+      const registrazioni = [...document.querySelectorAll('select')].map(sel => ({
+        id_atleta: sel.getAttribute('data-id'),
+        id_rpe: sel.value
+      }));
+
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          durata: durata,
+          data: dataOggi,
+          registrazioni: registrazioni
+        })
+      }).then(r => r.text())
+        .then(alert);
+    }
+  </script>
+</body>
+</html>
