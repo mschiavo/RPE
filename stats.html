@@ -86,6 +86,13 @@
         document.getElementById("loader").innerText = "Errore nel caricamento dei dati.";
         console.error(err);
       });
+    Promise.all([
+  fetch(`${API_URL}?action=get_metadata`).then(r => r.json()),
+  fetch(`${API_URL}?action=get_stats`).then(r => r.json())
+]).then(([metadata, stats]) => {
+  // costruzione dei grafici
+});
+
   </script>
 </body>
 </html>
