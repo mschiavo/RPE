@@ -1,90 +1,91 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Statistiche RPE</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    canvas { margin: 20px 0; max-width: 600px; }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h1>Statistiche RPE</h1>
-  <label for="atletaSelect">Filtra per atleta:</label>
-  <select id="atletaSelect" onchange="renderCharts()"></select>
+<body class="bg-gray-100 min-h-screen p-6">
+  <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Statistiche Allenamenti</h1>
+      <a href="index.html" class="text-blue-600 hover:underline">← Torna all'inserimento</a>
+    </div>
 
-  <canvas id="mediaMensile"></canvas>
-  <canvas id="mediaPerRuolo"></canvas>
+    <div id="loader" class="text-center my-4">⏳ Caricamento statistiche...</div>
+
+    <div class="grid md:grid-cols-2 gap-6 hidden" id="statistiche">
+      <div>
+        <h2 class="font-semibold mb-2">RPE Totali per Atleta</h2>
+        <canvas id="chartRPE"></canvas>
+      </div>
+      <div>
+        <h2 class="font-semibold mb-2">Durata Totale per Ruolo</h2>
+        <canvas id="chartDurata"></canvas>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API_URL = 'INSERISCI_URL_APPS_SCRIPT';
-    let dati = {}, atleteMap = {}, ruoloMap = {};
 
-    fetch(API_URL + '?action=get_stats')
+    fetch(API_URL + '?action=get_data')
       .then(r => r.json())
       .then(data => {
-        dati = data;
-        atleteMap = Object.fromEntries(data.atlete.map(a => [a[0], `${a[1]} ${a[2]}`]));
-        ruoloMap = Object.fromEntries(data.atlete.map(a => [a[0], a[5]]));
-        popolaSelect();
-        renderCharts();
+        const atleteMap = Object.fromEntries(data.atlete.map(a => [a[0], `${a[1]} ${a[2]}`]));
+        const ruoloMap = Object.fromEntries(data.atlete.map(a => [a[0], a[5]]));
+        const rpeRows = data.rpe_atleta_allenamento;
+        const allenamenti = Object.fromEntries(data.allenamenti.map(a => [a[0], { data: a[1], durata: parseInt(a[2]) }]));
+
+        const rpePerAtleta = {};
+        const durataPerRuolo = {};
+
+        for (const r of rpeRows) {
+          const atletaId = r[1];
+          const allenamento = allenamenti[r[2]];
+          const ruolo = ruoloMap[atletaId];
+          const rpeVal = parseInt(data.rpe.find(e => e[0] === r[3])[1]);
+
+          rpePerAtleta[atletaId] = (rpePerAtleta[atletaId] || 0) + rpeVal;
+          durataPerRuolo[ruolo] = (durataPerRuolo[ruolo] || 0) + allenamento.durata;
+        }
+
+        document.getElementById("loader").classList.add("hidden");
+        document.getElementById("statistiche").classList.remove("hidden");
+
+        // Chart RPE per Atleta
+        new Chart(document.getElementById('chartRPE'), {
+          type: 'bar',
+          data: {
+            labels: Object.keys(rpePerAtleta).map(id => atleteMap[id]),
+            datasets: [{
+              label: 'RPE Totale',
+              data: Object.values(rpePerAtleta),
+              backgroundColor: '#60a5fa'
+            }]
+          },
+          options: { responsive: true }
+        });
+
+        // Chart Durata per Ruolo
+        new Chart(document.getElementById('chartDurata'), {
+          type: 'pie',
+          data: {
+            labels: Object.keys(durataPerRuolo),
+            datasets: [{
+              label: 'Durata Totale (min)',
+              data: Object.values(durataPerRuolo),
+              backgroundColor: ['#facc15', '#34d399', '#a78bfa', '#f87171']
+            }]
+          },
+          options: { responsive: true }
+        });
+      })
+      .catch(err => {
+        document.getElementById("loader").innerText = "Errore nel caricamento dei dati.";
+        console.error(err);
       });
-
-    function popolaSelect() {
-      const select = document.getElementById('atletaSelect');
-      select.innerHTML = `<option value="tutti">Tutti</option>` +
-        dati.atlete.map(a => `<option value="${a[0]}">${a[1]} ${a[2]}</option>`).join('');
-    }
-
-    function renderCharts() {
-      const filtro = document.getElementById('atletaSelect').value;
-
-      const merged = dati.registrazioni.map(r => {
-        const allenamento = dati.allenamenti.find(a => a[0] == r[2]);
-        return {
-          id_atleta: r[1],
-          data: allenamento ? allenamento[1] : "",
-          mese: allenamento ? allenamento[1].slice(0, 7) : "",
-          rpe: parseInt(dati.rpe?.find(rr => rr[0] == r[3])?.[1]) || parseInt(r[3]),
-          ruolo: ruoloMap[r[1]]
-        };
-      }).filter(r => filtro === "tutti" || r.id_atleta === filtro);
-
-      const perMese = {};
-      const perRuolo = {};
-
-      merged.forEach(r => {
-        perMese[r.mese] = perMese[r.mese] || [];
-        perMese[r.mese].push(r.rpe);
-
-        perRuolo[r.ruolo] = perRuolo[r.ruolo] || [];
-        perRuolo[r.ruolo].push(r.rpe);
-      });
-
-      const medieMese = Object.entries(perMese).map(([k, arr]) => [k, media(arr)]);
-      const medieRuolo = Object.entries(perRuolo).map(([k, arr]) => [k, media(arr)]);
-
-      renderChart("mediaMensile", "RPE medio per mese", medieMese);
-      renderChart("mediaPerRuolo", "RPE medio per ruolo", medieRuolo);
-    }
-
-    function renderChart(id, label, dati) {
-      const ctx = document.getElementById(id).getContext('2d');
-      if (window[id]) window[id].destroy();
-      window[id] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: dati.map(d => d[0]),
-          datasets: [{ label, data: dati.map(d => d[1]), backgroundColor: 'steelblue' }]
-        },
-        options: { responsive: true }
-      });
-    }
-
-    function media(arr) {
-      return arr.reduce((a, b) => a + b, 0) / arr.length;
-    }
   </script>
 </body>
 </html>
