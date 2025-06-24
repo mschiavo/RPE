@@ -2,72 +2,74 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>RPE Atlete</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    .grid { display: flex; flex-wrap: wrap; gap: 10px; }
-    .card { border: 1px solid #ccc; padding: 10px; border-radius: 10px; width: 200px; }
-    select, input { width: 100%; margin-top: 5px; }
-  </style>
+  <title>Registro RPE</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h1>Registrazione RPE</h1>
-  <label>Durata allenamento (minuti): <input id="durata" type="number"></label>
-  <br/><br/><br/>
-  <div id="atleteContainer" class="grid"></div>
-  <button onclick="inviaDati()">Invia</button>
+<body class="bg-gray-100 min-h-screen p-4">
+  <div class="max-w-4xl mx-auto bg-white shadow rounded-lg p-6">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Registro RPE</h1>
+      <a href="stats.html" class="text-blue-600 hover:underline">Vai alle statistiche →</a>
+    </div>
+
+    <label class="block mb-2 font-semibold">Durata allenamento (minuti):</label>
+    <input type="number" id="durata" class="border p-2 rounded w-full mb-4" />
+
+    <div id="loader" class="hidden text-center my-4">⏳ Caricamento in corso...</div>
+    <div id="listaAtlete" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+
+    <button onclick="inviaDati()" class="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+      Salva RPE
+    </button>
+  </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwbLjCntIU74IqWoK_1dc3gBqsc9c6UhiRnhdJVLOC2Sos61gsM4Up2O48n0QOUoIN5/exec';
+    const API_URL = 'INSERISCI_URL_APPS_SCRIPT';
+    const email = localStorage.getItem("rpe_user_email");
+    if (!email) window.location.href = "login.html";
 
-    let atlete = [], rpeList = [];
+    document.getElementById("loader").classList.remove("hidden");
 
     fetch(API_URL + '?action=get_data')
       .then(r => r.json())
       .then(data => {
-        atlete = data.atlete;
-        rpeList = data.rpe;
-        renderAtlete();
-      });
-
-    function renderAtlete() {
-      const container = document.getElementById('atleteContainer');
-      atlete.forEach(atleta => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `
-          <strong>${atleta[1]} ${atleta[2]}</strong><br>
-          <label>RPE:
-            <select data-id="${atleta[0]}">
-              ${rpeList.map(r => `<option value="${r[0]}">${r[1]} - ${r[2]}</option>`).join('')}
+        const container = document.getElementById('listaAtlete');
+        data.atlete.forEach(a => {
+          const div = document.createElement('div');
+          div.className = 'bg-gray-50 border rounded p-3';
+          div.innerHTML = `
+            <strong>${a[1]} ${a[2]}</strong><br/>
+            <label class="block mt-2">RPE:</label>
+            <select data-id="${a[0]}" class="w-full p-1 border rounded">
+              ${data.rpe.map(r => `<option value="${r[0]}">${r[1]} - ${r[2]}</option>`).join('')}
             </select>
-          </label>
-        `;
-        container.appendChild(div);
-      });
-    }
+          `;
+          container.appendChild(div);
+        });
+      })
+      .finally(() => document.getElementById("loader").classList.add("hidden"));
 
     function inviaDati() {
-  const durata = document.getElementById('durata').value;
-  if (!durata || durata <= 0) return alert("Inserisci una durata valida");
+      const durata = document.getElementById('durata').value;
+      if (!durata || durata <= 0) return alert("Inserisci durata valida");
+      const dataOggi = new Date().toISOString().split('T')[0];
+      const registrazioni = [...document.querySelectorAll('select')].map(sel => ({
+        id_atleta: sel.getAttribute('data-id'),
+        id_rpe: sel.value
+      }));
+      document.getElementById("loader").classList.remove("hidden");
 
-  const dataOggi = new Date().toISOString().split('T')[0];
-  const registrazioni = [...document.querySelectorAll('select')].map(sel => ({
-    id_atleta: sel.getAttribute('data-id'),
-    id_rpe: sel.value
-  }));
-
-  fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({
-      durata: durata,
-      data: dataOggi,
-      registrazioni: registrazioni
-    })
-  }).then(r => r.text())
-    .then(msg => alert(msg));
-}
-
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          durata: durata,
+          data: dataOggi,
+          registrazioni: registrazioni
+        })
+      }).then(r => r.text())
+        .then(msg => alert(msg))
+        .finally(() => document.getElementById("loader").classList.add("hidden"));
+    }
   </script>
 </body>
 </html>
