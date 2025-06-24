@@ -1,56 +1,46 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Statistiche RPE</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistiche RPE</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
-  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
-    <div class="flex justify-between mb-6">
-      <h1 class="text-2xl font-bold">Statistiche Allenamenti</h1>
-      <a href="index.html" class="text-blue-600 hover:underline">← Inserimento</a>
-    </div>
-    <div id="loader" class="flex justify-center py-4">
-      <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="..."><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-    </div>
-    <div id="charts" class="hidden space-y-8">
-      <canvas id="chartRPE"></canvas>
-      <canvas id="chartDurata"></canvas>
-    </div>
+<body class="bg-gray-100 font-sans p-6">
+  <div class="bg-white p-6 rounded-2xl shadow-lg max-w-4xl mx-auto">
+    <h2 class="text-2xl font-bold mb-4 text-center">Statistiche RPE</h2>
+    <div id="loader" class="text-center mb-4">⏳ Caricamento...</div>
+    <canvas id="rpeChart" width="400" height="200"></canvas>
   </div>
-<script>
-const API = 'https://script.google.com/macros/s/AKfycbxJ80xRUCTIUVpJz6hH8WKQglryYvWzw3RLgK8i4pow/dev';
-Promise.all([
-  fetch(`${API}?action=get_metadata`).then(r=>r.json()),
-  fetch(`${API}?action=get_stats`).then(r=>r.json())
-]).then(([meta, stats]) => {
-  const mAt = Object.fromEntries(meta.atlete.map(a=>[a[0], `${a[1]} ${a[2]}`]));
-  const ruol = Object.fromEntries(meta.atlete.map(a=>[a[0], a[5]]));
-  const durPerRuolo={}, rpePerAtleta={};
+  <script>
+    const API = 'https://script.google.com/macros/s/AKfycbxf_DEDjW3Lsdbn3uIQSNr7qp9DQLsqIt34PxU5wcxS3Dmr6Fh85JO6oEzuPWg0wCMVvw/exec';
 
-  stats.rpe_join.forEach(r=>{
-    const idA = r[1], idAl = r[2], idR = r[3];
-    const dur = stats.allenamenti.find(a=>a[0]==idAl)?.[2] || 0;
-    rpePerAtleta[idA] = (rpePerAtleta[idA]||0) + parseInt(meta.rpe.find(rr=>rr[0]==idR)[1]);
-    durPerRuolo[ruol[idA]] = (durPerRuolo[ruol[idA]]||0) + parseInt(dur);
-  });
+    async function caricaStat() {
+      document.getElementById("loader").classList.remove("hidden");
+      const res = await fetch(`${API}?action=get_stats`);
+      const data = await res.json();
+      const counts = {};
+      data.rpe_join.forEach(r => {
+        counts[r[1]] = (counts[r[1]] || 0) + 1;
+      });
+      const labels = Object.keys(counts);
+      const values = Object.values(counts);
+      new Chart(document.getElementById('rpeChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Totale RPE per Atleta',
+            data: values,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+          }]
+        }
+      });
+      document.getElementById("loader").classList.add("hidden");
+    }
 
-  document.getElementById("loader").classList.add("hidden");
-  document.getElementById("charts").classList.remove("hidden");
-
-  new Chart(document.getElementById('chartRPE'), {
-    type: 'bar',
-    data: { labels: Object.keys(rpePerAtleta).map(k=>mAt[k]), datasets:[{label:'RPE Totale',data:Object.values(rpePerAtleta),backgroundColor:'#60a5fa'}] },
-    options:{responsive:true}
-  });
-  new Chart(document.getElementById('chartDurata'), {
-    type:'pie',
-    data:{ labels:Object.keys(durPerRuolo), datasets:[{data:Object.values(durPerRuolo),
-      backgroundColor:['#3b82f6','#34d399','#f59e0b','#ef4444']}]
-    },
-    options:{responsive:true}
-  });
-});
-</script>
+    caricaStat();
+  </script>
 </body>
 </html>
