@@ -81,6 +81,21 @@
         .then(msg => alert(msg))
         .finally(() => document.getElementById("loader").classList.add("hidden"));
     }
+
+    // Evita richieste duplicate
+async function caricaDatiMetadata() {
+  const cached = sessionStorage.getItem("metadata");
+  if (cached) return JSON.parse(cached);
+
+  const response = await fetch(`${API_URL}?action=get_metadata`);
+  const json = await response.json();
+  sessionStorage.setItem("metadata", JSON.stringify(json));
+  return json;
+}
+
+caricaDatiMetadata().then(data => {
+  // genera la UI da `data.atlete` e `data.rpe`
+});
   </script>
 </body>
 </html>
