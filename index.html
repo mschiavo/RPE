@@ -1,62 +1,68 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Registro RPE</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrazione RPE</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen p-6">
-  <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-    <div class="flex justify-between mb-6">
-      <h1 class="text-2xl font-bold">Registro RPE</h1>
-      <a href="stats.html" class="text-blue-600 hover:underline">Statistiche</a>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+  <div class="flex flex-col items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-3xl">
+      <h1 class="text-2xl font-bold mb-4 text-center">Registra RPE</h1>
+      <div id="loader" class="hidden text-center mb-4">⏳ Caricamento...</div>
+      <div id="form-container" class="space-y-6"></div>
+      <div class="flex justify-end mt-6">
+        <button onclick="salva()" class="bg-blue-600 text-white px-6 py-2 rounded-xl shadow hover:bg-blue-700 transition">Salva</button>
+      </div>
     </div>
-    <label class="block mb-2">Durata (min):</label>
-    <input type="number" id="durata" class="w-full p-2 border rounded mb-4">
-
-    <div id="loader" class="hidden justify-center py-4">
-      <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="..."><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-      <span class="ml-2 text-blue-600">Caricamento…</span>
-    </div>
-
-    <div id="listaAtlete" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-    <button onclick="inviaDati()" class="w-full bg-blue-600 text-white p-2 mt-4 rounded hover:bg-blue-700">Salva</button>
   </div>
 
-<script>
-const API = 'https://script.google.com/macros/s/AKfycbxJ80xRUCTIUVpJz6hH8WKQglryYvWzw3RLgK8i4pow/dev';
-if (!localStorage.getItem("rpe_user_email")) location='login.html';
+  <script>
+    const API = 'https://script.google.com/macros/s/AKfycbxf_DEDjW3Lsdbn3uIQSNr7qp9DQLsqIt34PxU5wcxS3Dmr6Fh85JO6oEzuPWg0wCMVvw/exec';
+    let metadata = {};
+    const loader = document.getElementById("loader");
+    const formContainer = document.getElementById("form-container");
 
-async function loadMeta() {
-  const c = sessionStorage.getItem("meta");
-  if (c) return JSON.parse(c);
+    function showLoader(show) {
+      loader.classList.toggle("hidden", !show);
+    }
 
-  const res = await fetch(`${API}?action=get_metadata`);
-  const json = await res.json();
-  sessionStorage.setItem("meta", JSON.stringify(json));
-  return json;
-}
+    async function caricaDati() {
+      showLoader(true);
+      const res = await fetch(`${API}?action=get_metadata`);
+      const data = await res.json();
+      metadata = data;
+      let html = metadata.atlete.map(a => `
+        <div class="grid grid-cols-2 gap-4 items-center border-b pb-2">
+          <div><strong>${a[1]} ${a[2]}</strong> (${a[5]})</div>
+          <select class="rpe border p-2 rounded" data-id="${a[0]}">
+            ${metadata.rpe.map(r => `<option value="${r[0]}">${r[1]} – ${r[2]}</option>`).join('')}
+          </select>
+        </div>
+      `).join('');
+      html += `<div class="pt-4"><label>Durata allenamento (minuti):</label><input id="durata" type="number" class="border p-2 w-full rounded mt-1" value="90"/></div>`;
+      formContainer.innerHTML = html;
+      showLoader(false);
+    }
 
-document.getElementById("loader").classList.remove("hidden");
-loadMeta().then(data => {
-  const d = document.getElementById("listaAtlete");
-  data.atlete.forEach(a => {
-    const card = document.createElement('div');
-    card.className = 'bg-gray-50 p-4 rounded';
-    card.innerHTML = `<strong>${a[1]} ${a[2]}</strong><select data-id="${a[0]}" class="w-full mt-2 border rounded p-1">${data.rpe.map(r=>`<option value="${r[0]}">${r[1]} - ${r[2]}</option>`).join('')}</select>`;
-    d.appendChild(card);
-  });
-}).finally(_=>document.getElementById("loader").classList.add("hidden"));
+    async function salva() {
+      showLoader(true);
+      const durata = document.getElementById("durata").value;
+      const data = new Date().toISOString().split('T')[0];
+      const registrazioni = Array.from(document.querySelectorAll('.rpe')).map(sel => ({
+        id_atleta: sel.dataset.id,
+        id_rpe: sel.value
+      }));
+      await fetch(API, {
+        method: "POST",
+        body: JSON.stringify({ durata, data, registrazioni })
+      });
+      alert("Dati salvati!");
+      showLoader(false);
+    }
 
-async function inviaDati() {
-  const durata = document.getElementById("durata").value;
-  if (!durata || durata <= 0) return alert("Durata non valida");
-  const data = new Date().toISOString().split('T')[0];
-  const regs = [...document.querySelectorAll('select')].map(s=>({ id_atleta:s.dataset.id, id_rpe:s.value }));
-
-  document.getElementById("loader").classList.remove("hidden");
-  const res = await fetch(API,{method:'POST',body:JSON.stringify({data, durata, registrazioni:regs})});
-  alert(await res.text());
-  document.getElementById("loader").classList.add("hidden");
-}
-</script>
+    caricaDati();
+  </script>
 </body>
 </html>
