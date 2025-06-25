@@ -154,7 +154,7 @@ function popolaTabAggregata(dati, tbody) {
     obj.count++;
     const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
     obj.sommaRpe += rpeVal;
-    obj.sommaDurata += d.durata ?? ``;
+    obj.sommaDurata += parseInt(d.durata ?? ``);
   });
 
   tbody.innerHTML = '';
