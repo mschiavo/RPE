@@ -189,7 +189,7 @@ function popolaTabPerAtleta(dati) {
     obj.count++;
     const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
     obj.sommaRpe += rpeVal;
-    obj.sommaDurata += d.durata ?? 0;
+    obj.sommaDurata += parseInt(d.durata ?? '');
   });
 
   tabPerAtleta.innerHTML = '';
@@ -230,7 +230,7 @@ function popolaTabPerRuolo(dati) {
     obj.count++;
     const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
     obj.sommaRpe += rpeVal;
-    obj.sommaDurata += d.durata ?? 0;
+    obj.sommaDurata += parseInt(d.durata ?? '');
   });
 
   tabPerRuolo.innerHTML = '';
