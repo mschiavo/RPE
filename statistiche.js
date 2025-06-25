@@ -34,6 +34,35 @@ async function caricaDati() {
     fetchJSON('rpe_data.json'),
   ]);
 
+  const mapRPEValore = Object.fromEntries(rpeList.map(r => [r.id, r.valore]));
+
+  function mappaRPEIdARate(rpeId) {
+    return mapRPEValore[rpeId] || 0;
+  }
+
+  function raggruppaPerAtletaConMedia(dati) {
+    const grouped = {};
+    dati.forEach(d => {
+      const rpeVal = mappaRPEIdARate(d.rpe_id);
+      if (!grouped[d.atleta_id]) grouped[d.atleta_id] = { totaleRPE: 0, totaleDurata: 0, count: 0 };
+      grouped[d.atleta_id].totaleRPE += rpeVal;
+      grouped[d.atleta_id].totaleDurata += d.durata || 0;
+      grouped[d.atleta_id].count++;
+    });
+    return grouped;
+  }
+
+  // Per tabella ultima settimana
+  const datiUltimaSettimana = rpeData.filter(d => new Date(mapAllenamenti[d.allenamento_id]?.data) >= oneWeekAgo);
+  const groupedSettimana = raggruppaPerAtletaConMedia(datiUltimaSettimana);
+  stampaTabellaMediaSettimanaMese('ultimaSettimana', 'Ultimi 7 giorni', datiUltimaSettimana, mapAtlete, mapAllenamenti);
+  
+  // Per tabella ultimo mese
+  const datiUltimoMese = rpeData.filter(d => new Date(mapAllenamenti[d.allenamento_id]?.data) >= oneMonthAgo);
+  const groupedMese = raggruppaPerAtletaConMedia(datiUltimoMese);
+  stampaTabellaMediaSettimanaMese('ultimoMese', 'Ultimi 30 giorni', datiUltimoMese, mapAtlete, mapAllenamenti);
+
+
   const mapRPE = Object.fromEntries(rpeList.map(r => [r.id, `${r.valore} - ${r.descrizione}`]));
   const mapAtlete = Object.fromEntries(atlete.map(a => [a.id, a]));
   const mapAllenamenti = Object.fromEntries(allenamenti.map(a => [a.id, a]));
@@ -138,3 +167,55 @@ function stampaTabellaMedia(containerId, titolo, dati) {
     </div>
   `;
 }
+
+function stampaTabellaMediaSettimanaMese(containerId, titolo, dati, mapAtlete, mapAllenamenti) {
+  // Raggruppa i dati per atleta
+  const grouped = {};
+  dati.forEach(d => {
+    if (!grouped[d.atleta_id]) grouped[d.atleta_id] = { totaleRPE: 0, totaleDurata: 0, count: 0 };
+    grouped[d.atleta_id].totaleRPE += parseInt(d.rpe_id); // se rpe_id è id, bisogna mappare al valore, correggo sotto
+    grouped[d.atleta_id].totaleDurata += d.durata || 0;
+    grouped[d.atleta_id].count++;
+  });
+
+  // Per correggere l'errore rpe_id che è id, serve mappare al valore RPE
+  // quindi passiamo mapRPE come oggetto id => valore numerico
+  // modifica chiamata sotto
+
+  const rows = Object.entries(grouped).map(([atletaId, stats]) => {
+    const atleta = mapAtlete[atletaId];
+    const mediaRPE = (stats.totaleRPE / stats.count).toFixed(2);
+    const mediaDurata = (stats.totaleDurata / stats.count).toFixed(2);
+    return {
+      nome: atleta ? `${atleta.nome} ${atleta.cognome}` : 'Sconosciuto',
+      mediaRPE,
+      mediaDurata
+    };
+  });
+
+  const container = document.getElementById(containerId);
+  container.innerHTML = `
+    <h2 class="text-xl font-bold mb-2">${titolo}</h2>
+    <div class="overflow-auto">
+    <table class="min-w-full bg-white rounded shadow">
+      <thead>
+        <tr class="bg-gray-200 text-left">
+          <th class="p-2">Atleta</th>
+          <th class="p-2">RPE medio</th>
+          <th class="p-2">Durata media (min)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr class="border-t">
+            <td class="p-2">${r.nome}</td>
+            <td class="p-2">${r.mediaRPE}</td>
+            <td class="p-2">${r.mediaDurata}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    </div>
+  `;
+}
+
