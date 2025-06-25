@@ -19,12 +19,14 @@ function salvaToken() {
   localStorage.setItem('github_token', token);
   alert('Token salvato localmente!');
   tokenContainer.style.display = 'none';
-  caricaDati(); // caricamento dati appena salvato il token
+    window.onload = () => {
+      if (token) caricaDati();
+    };
 }
 
 const urlBase = 'https://raw.githubusercontent.com/mschiavo/RPE/main';
 
-window.onload = async () => {
+async function caricaDati() {
   const [atlete, allenamenti, rpeList, rpeData] = await Promise.all([
     fetchJSON('atlete.json'),
     fetchJSON('allenamenti.json'),
