@@ -1,4 +1,3 @@
-/* rpe.json */
 [
   { "id": "1", "valore": "1", "descrizione": "Facile" },
   { "id": "2", "valore": "10", "descrizione": "Estremamente faticoso" },
