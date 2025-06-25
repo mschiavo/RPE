@@ -1,20 +1,16 @@
 // token-loader.js
-const GIST_ID = "d8bee50bb41a6c3324f81c051ccccd1b";
-const FALLBACK_GIST_TOKEN = FALLBACK_GIST_TOKEN || ""; // definito in secrets.js
 
 async function initToken() {
-  const saved = localStorage.getItem("github_token");
-  if (saved) return saved;
+  const urlToken = new URLSearchParams(window.location.search).get("token");
 
-  const res = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-    headers: {
-      Authorization: `token ${FALLBACK_GIST_TOKEN}`
-    }
-  });
+  if (urlToken) {
+    localStorage.setItem("github_token", urlToken);
+    return urlToken;
+  }
 
-  const gist = await res.json();
-  const content = JSON.parse(Object.values(gist.files)[0].content);
-  const token = content.token;
-  localStorage.setItem("github_token", token);
-  return token;
+  const cached = localStorage.getItem("github_token");
+  if (cached) return cached;
+
+  alert("Token non presente. Aggiungilo all'URL come ?token=ghp_XXXXX");
+  throw new Error("Token mancante");
 }
