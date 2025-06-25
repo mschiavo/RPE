@@ -1,159 +1,66 @@
-const repoOwner = "mschiavo";
-const repoName = "RPE";
-const allenamentiFile = "allenamenti.json";
-const rpeDataFile = "rpe_data.json";
-let token = localStorage.getItem("github_token");
-
-document.addEventListener("DOMContentLoaded", async () => {
-  token = await initToken(); // token disponibile da ora
-  // ora puoi usarlo in fetch/PUT
-});
-
+const API_URL = "https://script.google.com/macros/s/INSERISCI_LA_TUA_URL/exec";
 let atlete = [];
 let rpeList = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
-  if (!token) {
-    document.getElementById("token").addEventListener("change", (e) => {
-      token = e.target.value;
-      localStorage.setItem("github_token", token);
-      e.target.style.display = "none";
-    });
-  }
-
-  await caricaDati();
-});
-
-async function caricaDati() {
-  const atleteRes = await fetch(`https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/atlete.json`);
-  const rpeRes = await fetch(`https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/rpe.json`);
-  atlete = await atleteRes.json();
-  rpeList = await rpeRes.json();
+  showLoader(true);
+  const res = await fetch(`${API_URL}?action=get_all`);
+  const data = await res.json();
+  atlete = data.atlete;
+  rpeList = data.rpe;
   renderAtlete();
-}
+  showLoader(false);
+});
 
 function renderAtlete() {
   const container = document.getElementById("atleteContainer");
   container.innerHTML = "";
-  atlete.forEach(atleta => {
-    const card = document.createElement("div");
-    card.className = "border rounded p-4 bg-white shadow";
-
-    const select = document.createElement("select");
-    select.className = "mt-2 border p-2 w-full";
-    select.id = `rpe-${atleta.id}`;
-    rpeList.forEach(rpe => {
-      const option = document.createElement("option");
-      option.value = rpe.id;
-      option.textContent = `${rpe.id} - ${rpe.descrizione}`;
-      select.appendChild(option);
-    });
-
-    const durataInput = document.createElement("input");
-    durataInput.className = "mt-2 border p-2 w-full";
-    durataInput.type = "number";
-    durataInput.placeholder = "Durata specifica (minuti)";
-    durataInput.id = `durata-${atleta.id}`;
-
-    card.innerHTML = `<h2 class="font-bold">${atleta.nome} ${atleta.cognome}</h2>`;
-    card.appendChild(select);
-    card.appendChild(durataInput);
-
-    container.appendChild(card);
+  atlete.forEach(a => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <h3>${a.nome} ${a.cognome}</h3>
+      <select id="rpe-${a.id}">
+        ${rpeList.map(r => `<option value="${r.id}">${r.valore} - ${r.descrizione}</option>`).join("")}
+      </select>
+      <input id="durata-${a.id}" placeholder="Durata specifica (min)" type="number" />
+      <hr/>
+    `;
+    container.appendChild(div);
   });
 }
 
 async function salvaDati() {
-  const dataAllenamento = document.getElementById("dataAllenamento").value;
-  const durataGenerale = document.getElementById("durataGenerale").value;
+  const data = document.getElementById("dataAllenamento").value;
+  const durata = document.getElementById("durataGenerale").value;
 
-  if (!dataAllenamento) {
-    alert("Compila data allenamento.");
-    return;
-  }
-  if (!durataGenerale) {
-    alert("Compila durata allenamento.");
+  if (!data || !durata) {
+    alert("Inserisci data e durata");
     return;
   }
 
-  const allenamenti = await leggiFileJSON(allenamentiFile);
-  let allenamentoEsistente = allenamenti.find(a => a.data === dataAllenamento);
-  // recupera in ordine cronologico solo l'ultimo allenamento presente nel file
-  allenamenti.sort((a, b) => new Date(a.data) - new Date(b.data));
-  let allenamentoPrecedente = allenamenti[allenamenti.length - 1];
-  let allenamentoId;
-
-  alert(allenamentoEsistente);
-  console.log(allenamentoEsistente)
-  alert(allenamentoEsistente);
-  console.log(allenamentoEsistente);
-
-  if (allenamentoEsistente) {
-    allenamentoId = allenamentoEsistente.id;
-    alert("Allenamento già presente per questa data. Userò l’ID esistente.");
-  } else {
-    allenamentoId = allenamentoPrecedente.id + 1;
-    allenamenti.push({
-      id: allenamentoId,
-      data: dataAllenamento,
-      durata: parseInt(durataGenerale)
-    });
-    await scriviFileJSON(allenamentiFile, allenamenti);
-  }
-
-  const rpeData = await leggiFileJSON(rpeDataFile);
-  atlete.forEach(atleta => {
-    const rpe_id = document.getElementById(`rpe-${atleta.id}`).value;
-    const durataSpecifica = document.getElementById(`durata-${atleta.id}`).value;
-    rpeData.push({
-      atleta_id: atleta.id.toString(),
-      allenamento_id: allenamentoId,
-      rpe_id: rpe_id.toString(),
-      data: dataAllenamento,
-      durata: durataSpecifica ? durataSpecifica : durataGenerale
-    });
+  const datiRPE = atlete.map(a => {
+    return {
+      atleta_id: a.id,
+      rpe_id: document.getElementById(`rpe-${a.id}`).value,
+      durata: document.getElementById(`durata-${a.id}`).value
+    };
   });
 
-  await scriviFileJSON(rpeDataFile, rpeData);
-  alert("Dati salvati con successo!");
-}
+  showLoader(true);
 
-async function leggiFileJSON(file) {
-  const url = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${file}?${Date.now()}`;
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `token ${token}`
-    }
-  });
-
-  if (!res.ok) throw new Error(`Errore nel caricamento di ${nomeFile}`);
-
-  const data = await res.json();
-  const contentDecoded = atob(data.content);
-  return JSON.parse(contentDecoded);
-}
-
-async function scriviFileJSON(fileName, data) {
-  const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`;
-  const getRes = await fetch(url, {
-    headers: { Authorization: `token ${token}` }
-  });
-  const fileData = await getRes.json();
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${token}`,
-      "Content-Type": "application/json"
-    },
+  await fetch(`${API_URL}?action=save_rpe`, {
+    method: "POST",
     body: JSON.stringify({
-      message: `Aggiornamento ${fileName}`,
-      content,
-      sha: fileData.sha
+      data,
+      durata_generale: durata,
+      dati_rpe: datiRPE
     })
   });
 
-  if (!res.ok) {
-    alert(`Errore nel salvataggio di ${fileName}`);
-  }
+  showLoader(false);
+  alert("Dati salvati!");
+}
+
+function showLoader(visible) {
+  document.getElementById("loader").style.display = visible ? "block" : "none";
 }
