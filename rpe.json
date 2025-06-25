@@ -1,12 +1,13 @@
 [
-  { "id": "1", "valore": "1", "descrizione": "Facile" },
-  { "id": "2", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "3", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "4", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "5", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "6", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "7", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "8", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "9", "valore": "10", "descrizione": "Estremamente faticoso" },
-  { "id": "10", "valore": "10", "descrizione": "Estremamente faticoso" }
+  { "id": "0", "valore": 0, "descrizione": "Assente" },
+  { "id": "1", "valore": 1, "descrizione": "Riposo attivo" },
+  { "id": "2", "valore": 2, "descrizione": "Molto facile" },
+  { "id": "3", "valore": 3, "descrizione": "Facile" },
+  { "id": "4", "valore": 4, "descrizione": "Moderato" },
+  { "id": "5", "valore": 5, "descrizione": "Un po' faticoso" },
+  { "id": "6", "valore": 6, "descrizione": "Faticoso" },
+  { "id": "7", "valore": 7, "descrizione": "Molto faticoso" },
+  { "id": "8", "valore": 8, "descrizione": "Duro" },
+  { "id": "9", "valore": 9, "descrizione": "Quasi massimo" },
+  { "id": "10", "valore": 10, "descrizione": "Massimo sforzo" }
 ]
