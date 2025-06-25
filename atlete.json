@@ -1,4 +1,3 @@
-/* atlete.json */
 [
   { "id": "1", "nome": "Giulia", "cognome": "Rossi", "ruolo": "Palleggio" },
   { "id": "2", "nome": "Linda", "cognome": "Bianchi", "ruolo": "Palleggio" },
