@@ -51,6 +51,7 @@ async function salvaDati() {
 
   await fetch(`${API_URL}?action=save_rpe`, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       data,
       durata_generale: durata,
