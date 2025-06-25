@@ -1,0 +1,13 @@
+/* rpe.json */
+[
+  { "id": "1", "valore": "1", "descrizione": "Facile" },
+  { "id": "2", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "3", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "4", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "5", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "6", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "7", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "8", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "9", "valore": "10", "descrizione": "Estremamente faticoso" },
+  { "id": "10", "valore": "10", "descrizione": "Estremamente faticoso" }
+]
