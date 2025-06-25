@@ -1,5 +1,12 @@
-let token = '';
-document.getElementById('token').addEventListener('change', (e) => token = e.target.value);
+let token = localStorage.getItem('github_token') || '';
+const tokenInput = document.getElementById('token');
+if (tokenInput && token) tokenInput.value = token;
+
+function salvaToken() {
+  token = tokenInput.value;
+  localStorage.setItem('github_token', token);
+  alert('Token salvato localmente!');
+}
 
 async function caricaDati() {
   const atlete = await fetchGitHubJSON('atlete.json');
