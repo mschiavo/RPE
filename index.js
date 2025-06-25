@@ -13,9 +13,7 @@ let atlete = [];
 let rpeList = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
-  if (token) {
-    document.getElementById("token").style.display = "none";
-  } else {
+  if (!token) {
     document.getElementById("token").addEventListener("change", (e) => {
       token = e.target.value;
       localStorage.setItem("github_token", token);
