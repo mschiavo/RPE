@@ -85,7 +85,7 @@
         try {
           token = await initToken(); // ora disponibile ovunque
           const script = document.createElement("script");
-          script.src = "index.js"; // o "statistiche.js"
+          script.src = "statistiche.js"; // o "statistiche.js"
           document.body.appendChild(script);
         } catch (e) {
           console.error("Token mancante o invalido");

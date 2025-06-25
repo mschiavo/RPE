@@ -1,37 +1,8 @@
-async function initToken() {
-  let token = localStorage.getItem("github_token");
-  if (token) return token;
-
-  // 1. Leggi token da Gist PRIVATO via GitHub API (solo la prima volta)
-  const gistId = "e6f5b7f9bd0f49c12345678901234567"; // <-- il tuo Gist ID
-  const fallbackToken = "ghp_LEGGI_SOLO_GIST";         // Token limitato solo a leggere i tuoi Gist
-
-  try {
-    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers: {
-        Authorization: `token ${fallbackToken}`
-      }
-    });
-    if (!res.ok) throw new Error("Gist non accessibile");
-
-    const gist = await res.json();
-    const fileContent = Object.values(gist.files)[0].content;
-    const parsed = JSON.parse(fileContent);
-
-    token = parsed.token;
-    localStorage.setItem("github_token", token);
-    return token;
-  } catch (err) {
-    alert("Errore caricamento token dal Gist.");
-    throw err;
-  }
-}
-
 const repoOwner = "mschiavo";
 const repoName = "RPE";
 const allenamentiFile = "allenamenti.json";
 const rpeDataFile = "rpe_data.json";
-let token;
+let token = localStorage.getItem("github_token");
 
 document.addEventListener("DOMContentLoaded", async () => {
   token = await initToken(); // token disponibile da ora
