@@ -2,32 +2,161 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Statistiche RPE</title>
-  <script defer src="statistiche.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Statistiche RPE - Allenamenti</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f9fafb;
+      color: #222;
+      max-width: 960px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 1rem;
+      box-sizing: border-box;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      font-size: 1.3rem;
+      padding: 1rem;
+      text-align: center;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    a#link-inserimento {
+      display: inline-block;
+      margin-bottom: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: #2563eb;
+    }
+    a#link-inserimento:hover {
+      text-decoration: underline;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 2rem;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+    }
+    th, td {
+      text-align: left;
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid #ddd;
+      font-size: 0.9rem;
+    }
+    th {
+      background-color: #3b82f6;
+      color: white;
+      font-weight: 700;
+    }
+    tbody tr:hover {
+      background-color: #e0e7ff;
+    }
+    caption {
+      text-align: left;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 0.5rem 0;
+      color: #111827;
+    }
+    #loader {
+      font-weight: 600;
+      color: #2563eb;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) {
+      body {
+        padding: 0.5rem;
+      }
+      th, td {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.7rem;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-100 p-4">
-  <div class="max-w-7xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4 text-center">Statistiche Allenamenti</h1>
+<body>
+  <header>Statistiche RPE - Allenamenti</header>
 
-    <nav class="mb-6 text-center">
-      <a href="index.html" class="text-blue-600 hover:underline mr-4">Inserimento Dati</a>
-    </nav>
+  <a href="index.html" id="link-inserimento">← Torna a Inserimento RPE</a>
 
-    <div id="token-container" class="mb-6">
-      <label class="block text-gray-700 mb-1" for="token">GitHub Token:</label>
-      <input id="token" type="password" placeholder="Inserisci token GitHub" class="w-full p-2 border rounded" />
-      <button onclick="salvaToken()" class="mt-2 px-3 py-1 bg-gray-200 rounded">Salva Token</button>
-    </div>
+  <div id="loader">Caricamento dati...</div>
 
-    <div id="contenuto" class="space-y-10">
-      <div id="ultimoAllenamento"></div>
-      <div id="ultimaSettimana"></div>
-      <div id="ultimoMese"></div>
-      <div id="mediaPerAtleta"></div>
-      <div id="mediaPerRuolo"></div>
-    </div>
-  </div>
+  <table id="tab-ultimo-allenamento" aria-label="Voti ultimo allenamento">
+    <caption>Voti dell'ultimo allenamento</caption>
+    <thead>
+      <tr>
+        <th>Atleta</th>
+        <th>Ruolo</th>
+        <th>RPE</th>
+        <th>Durata (min)</th>
+        <th>Data</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <table id="tab-ultima-settimana" aria-label="Voti ultima settimana">
+    <caption>Voti medi dell'ultima settimana</caption>
+    <thead>
+      <tr>
+        <th>Atleta</th>
+        <th>RPE medio</th>
+        <th>Durata media (min)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <table id="tab-ultimo-mese" aria-label="Voti ultimo mese">
+    <caption>Voti medi dell'ultimo mese</caption>
+    <thead>
+      <tr>
+        <th>Atleta</th>
+        <th>RPE medio</th>
+        <th>Durata media (min)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <table id="tab-per-atleta" aria-label="Voti per atleta">
+    <caption>Voti per atleta (tutti gli allenamenti)</caption>
+    <thead>
+      <tr>
+        <th>Atleta</th>
+        <th>Ruolo</th>
+        <th>Numero allenamenti</th>
+        <th>RPE medio</th>
+        <th>Durata media (min)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <table id="tab-per-ruolo" aria-label="Voti per ruolo">
+    <caption>Voti medi per ruolo (tutti gli allenamenti)</caption>
+    <thead>
+      <tr>
+        <th>Ruolo</th>
+        <th>RPE medio</th>
+        <th>Durata media (min)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="statistiche.js"></script>
 </body>
 </html>
