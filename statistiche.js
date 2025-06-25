@@ -1,254 +1,100 @@
-// statistiche.js - gestione visualizzazione tabelle statistiche
-
-const loader = document.getElementById('loader');
-
-const repo = 'mschiavo/RPE'; // Modifica se necessario
-
-const tabUltimoAllenamento = document.querySelector('#tab-ultimo-allenamento tbody');
-const tabUltimaSettimana = document.querySelector('#tab-ultima-settimana tbody');
-const tabUltimoMese = document.querySelector('#tab-ultimo-mese tbody');
-const tabPerAtleta = document.querySelector('#tab-per-atleta tbody');
-const tabPerRuolo = document.querySelector('#tab-per-ruolo tbody');
-
-let atlete = [];
-let allenamenti = [];
-let rpeList = [];
-let rpeData = [];
-
-let token = localStorage.getItem("github_token");
+const API_URL = "https://script.google.com/macros/s/AKfycbx_gVYSWRtgR8IxIlbKzPz26iLnVVVhrhlTVwfVpGyHoxqJaIUjEAb77U6wvXaMpqMEng/exec";
 
 document.addEventListener("DOMContentLoaded", async () => {
-  token = await initToken(); // token disponibile da ora
-  // ora puoi usarlo in fetch/PUT
+  showLoader(true);
+  const res = await fetch(`${API_URL}?action=get_all`);
+  const data = await res.json();
+  showLoader(false);
+  renderTabelle(data);
 });
 
-init();
+function renderTabelle({ atlete, rpe_data, allenamenti }) {
+  const container = document.getElementById("tabelle");
+  const oggi = new Date();
+  const settimanaFa = new Date(oggi); settimanaFa.setDate(oggi.getDate() - 7);
+  const meseFa = new Date(oggi); meseFa.setDate(oggi.getDate() - 30);
 
-async function init() {
-  showLoader(true);
-  try {
-    [atlete, rpeList, allenamenti, rpeData] = await Promise.all([
-      fetchJSON('atlete.json'),
-      fetchJSON('rpe.json'),
-      fetchAllenamenti(),
-      fetchJSON('rpe_data.json')
-    ]);
-    popolaTabelle();
-  } catch (err) {
-    alert('Errore caricamento dati: ' + err.message);
-  }
-  showLoader(false);
+  const parseData = d => new Date(d + "T00:00:00");
+
+  const ultimiAllenamenti = [...new Set(rpe_data.map(r => r.data))].sort().reverse();
+  const ultimaData = ultimiAllenamenti[0];
+  const datiUltimo = rpe_data.filter(r => r.data === ultimaData);
+  const datiSettimana = rpe_data.filter(r => parseData(r.data) >= settimanaFa);
+  const datiMese = rpe_data.filter(r => parseData(r.data) >= meseFa);
+
+  // Funzioni di aggregazione
+  const perAtleta = aggregaPer(rpe_data, "atleta_id", atlete);
+  const perRuolo = aggregaPer(rpe_data, "ruolo", atlete);
+  const medieSettimana = aggregaMedie(datiSettimana, atlete);
+  const medieMese = aggregaMedie(datiMese, atlete);
+
+  container.appendChild(creaTabella(datiUltimo, "Voti ultimo allenamento", atlete));
+  container.appendChild(creaTabella(medieSettimana, "Media ultima settimana", atlete, true));
+  container.appendChild(creaTabella(medieMese, "Media ultimo mese", atlete, true));
+  container.appendChild(creaTabella(perAtleta, "Voti per atleta", atlete));
+  container.appendChild(creaTabella(perRuolo, "Voti per ruolo", atlete));
 }
 
-async function fetchJSON(filename) {
-  const resp = await fetch(filename);
-  if (!resp.ok) throw new Error(`Impossibile caricare ${filename}`);
-  return resp.json();
-}
-
-async function fetchAllenamenti() {
-  // Prendo allenamenti da GitHub
-  const url = `https://api.github.com/repos/${repo}/contents/allenamenti.json`;
-  const resp = await fetch(url, {
-    headers: {
-      Authorization: `token ${token}`,
-      Accept: 'application/vnd.github.v3+json'
-    }
+function aggregaPer(data, chiave, atlete) {
+  const mappa = {};
+  data.forEach(r => {
+    const id = chiave === "ruolo"
+        ? atlete.find(a => a.id == r.atleta_id)?.ruolo
+        : r.atleta_id;
+    if (!mappa[id]) mappa[id] = [];
+    mappa[id].push(r);
   });
-  if (resp.status === 404) return [];
-  if (!resp.ok) throw new Error('Errore nel caricamento degli allenamenti');
-  const json = await resp.json();
-  const content = atob(json.content.replace(/\n/g, ''));
-  return JSON.parse(content);
-}
-
-// Trova atleta per id
-function getAtletaById(id) {
-  return atlete.find(a => a.id === id);
-}
-// Trova RPE per id
-function getRPEById(id) {
-  return rpeList.find(r => r.id === id);
-}
-
-// Funzione per popolare tutte le tabelle
-function popolaTabelle() {
-  if (allenamenti.length === 0) {
-    const vuotoRow = '<tr><td colspan="5" style="text-align:center;">Nessun dato disponibile</td></tr>';
-    tabUltimoAllenamento.innerHTML = vuotoRow;
-    tabUltimaSettimana.innerHTML = vuotoRow;
-    tabUltimoMese.innerHTML = vuotoRow;
-    tabPerAtleta.innerHTML = vuotoRow;
-    tabPerRuolo.innerHTML = vuotoRow;
-    return;
-  }
-
-  // 1) Voti ultimo allenamento
-  const ultimoData = getUltimaData(allenamenti);
-  const allenamentoUltimo = allenamenti.filter(a => a.data.startsWith(ultimoData));
-  const datiAllenamentoUltimo = rpeData.filter(d => allenamentoUltimo.some(a => a.id === d.allenamento_id));
-  popolaTabUltimoAllenamento(datiAllenamentoUltimo);
-
-  // 2) Voti medi ultima settimana (7 giorni precedenti incluso oggi)
-  const settimanaDataMin = new Date();
-  settimanaDataMin.setDate(settimanaDataMin.getDate() - 6);
-  let filterAllenamentiUltimaSettimana = allenamenti.filter(a => new Date(a.data) >= settimanaDataMin);
-  popolaTabAggregata(rpeData.filter(d => filterAllenamentiUltimaSettimana.some(a => a.id === d.allenamento_id)), tabUltimaSettimana);
-
-  // 3) Voti medi ultimo mese (30 giorni precedenti incluso oggi)
-  const meseDataMin = new Date();
-  meseDataMin.setDate(meseDataMin.getDate() - 29);
-  let filterAllenamentiUltimoMese = allenamenti.filter(a => new Date(a.data) >= meseDataMin);
-  popolaTabAggregata(rpeData.filter(d => filterAllenamentiUltimoMese.some(a => a.id === d.allenamento_id)), tabUltimoMese);
-
-  // 4) Voti per atleta (tutti)
-  popolaTabPerAtleta(rpeData);
-
-  // 5) Voti per ruolo (tutti)
-  popolaTabPerRuolo(rpeData);
-}
-
-function getUltimaData(allenamenti) {
-  // Prendo la data massima YYYY-MM-DD (senza orario)
-  const dates = allenamenti.map(a => a.data.substring(0, 10));
-  return dates.reduce((max, curr) => (curr > max ? curr : max), '0000-00-00');
-}
-
-function popolaTabUltimoAllenamento(dati) {
-  if (dati.length === 0) {
-    tabUltimoAllenamento.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun dato disponibile</td></tr>';
-    return;
-  }
-  tabUltimoAllenamento.innerHTML = '';
-
-  dati.forEach(d => {
-    const atleta = getAtletaById(d.atleta_id);
-    const rpe = getRPEById(d.rpe_id);
-    if (!atleta || !rpe) return;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${atleta.nome}</td>
-      <td>${atleta.ruolo || ''}</td>
-      <td>${rpe.valore}</td>
-      <td>${d.durata ?? ''}</td>
-      <td>${d.data.substring(0,10)}</td>
-    `;
-    tabUltimoAllenamento.appendChild(tr);
+  return Object.entries(mappa).map(([k, arr]) => {
+    const rpeMedia = media(arr.map(x => +x.rpe_id));
+    const durataMedia = media(arr.map(x => +x.durata));
+    const nome = chiave === "ruolo" ? k : formatNome(atlete, k);
+    return { nome, rpe_id: rpeMedia.toFixed(2), durata: durataMedia.toFixed(1) };
   });
 }
 
-// Funzione per aggregare dati per atleta (media rpe e durata) e popolare tabella passata
-function popolaTabAggregata(dati, tbody) {
-  if (dati.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun dato disponibile</td></tr>';
-    return;
-  }
-  // Raggruppa per atleta id
-  const map = new Map();
-
-  dati.forEach(d => {
-    if (!map.has(d.atleta_id)) {
-      map.set(d.atleta_id, { count: 0, sommaRpe: 0, sommaDurata: 0 });
-    }
-    const obj = map.get(d.atleta_id);
-    obj.count++;
-    const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
-    obj.sommaRpe += rpeVal;
-    obj.sommaDurata += parseInt(d.durata ?? ``);
+function aggregaMedie(data, atlete) {
+  const mappa = {};
+  data.forEach(r => {
+    if (!mappa[r.atleta_id]) mappa[r.atleta_id] = [];
+    mappa[r.atleta_id].push(r);
   });
-
-  tbody.innerHTML = '';
-  map.forEach((val, atletaId) => {
-    const atleta = getAtletaById(atletaId);
-    if (!atleta) return;
-    const mediaRpe = (parseInt(val.sommaRpe) / val.count).toFixed(2);
-    const mediaDurata = (parseInt(val.sommaDurata) / val.count).toFixed(1);
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${atleta.nome}</td>
-      <td>${mediaRpe}</td>
-      <td>${mediaDurata}</td>
-    `;
-    tbody.appendChild(tr);
+  return Object.entries(mappa).map(([id, voci]) => {
+    const rpeMedia = media(voci.map(x => +x.rpe_id));
+    const durataMedia = media(voci.map(x => +x.durata));
+    const nome = formatNome(atlete, id);
+    return { nome, rpe_id: rpeMedia.toFixed(2), durata: durataMedia.toFixed(1) };
   });
 }
 
-function popolaTabPerAtleta(dati) {
-  if (dati.length === 0) {
-    tabPerAtleta.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun dato disponibile</td></tr>';
-    return;
-  }
-  const map = new Map();
-
-  dati.forEach(d => {
-    if (!map.has(d.atleta_id)) {
-      map.set(d.atleta_id, { count: 0, sommaRpe: 0, sommaDurata: 0 });
-    }
-    const obj = map.get(d.atleta_id);
-    obj.count++;
-    const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
-    obj.sommaRpe += rpeVal;
-    obj.sommaDurata += parseInt(d.durata ?? '');
+function creaTabella(data, titolo, atlete, soloMedie = false) {
+  const table = document.createElement("table");
+  table.innerHTML = `<caption>${titolo}</caption>
+    <thead><tr>${soloMedie
+      ? "<th>Atleta</th><th>RPE medio</th><th>Durata media</th>"
+      : "<th>Atleta</th><th>RPE</th><th>Durata</th><th>Data</th>"}</tr></thead>`;
+  const tbody = document.createElement("tbody");
+  data.forEach(r => {
+    const row = document.createElement("tr");
+    const nome = r.nome || formatNome(atlete, r.atleta_id);
+    row.innerHTML = soloMedie
+        ? `<td>${nome}</td><td>${r.rpe_id}</td><td>${r.durata}</td>`
+        : `<td>${nome}</td><td>${r.rpe_id}</td><td>${r.durata}</td><td>${r.data}</td>`;
+    tbody.appendChild(row);
   });
-
-  tabPerAtleta.innerHTML = '';
-  map.forEach((val, atletaId) => {
-    const atleta = getAtletaById(atletaId);
-    if (!atleta) return;
-    const mediaRpe = (val.sommaRpe / val.count).toFixed(2);
-    const mediaDurata = (val.sommaDurata / val.count).toFixed(1);
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${atleta.nome}</td>
-      <td>${atleta.ruolo || ''}</td>
-      <td>${val.count}</td>
-      <td>${mediaRpe}</td>
-      <td>${mediaDurata}</td>
-    `;
-    tabPerAtleta.appendChild(tr);
-  });
+  table.appendChild(tbody);
+  return table;
 }
 
-function popolaTabPerRuolo(dati) {
-  if (dati.length === 0) {
-    tabPerRuolo.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun dato disponibile</td></tr>';
-    return;
-  }
-  const map = new Map();
-
-  dati.forEach(d => {
-    const atleta = getAtletaById(d.atleta_id);
-    if (!atleta) return;
-    const ruolo = atleta.ruolo || 'Sconosciuto';
-
-    if (!map.has(ruolo)) {
-      map.set(ruolo, { count: 0, sommaRpe: 0, sommaDurata: 0 });
-    }
-    const obj = map.get(ruolo);
-    obj.count++;
-    const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
-    obj.sommaRpe += rpeVal;
-    obj.sommaDurata += parseInt(d.durata ?? '');
-  });
-
-  tabPerRuolo.innerHTML = '';
-  map.forEach((val, ruolo) => {
-    const mediaRpe = (val.sommaRpe / val.count).toFixed(2);
-    const mediaDurata = (val.sommaDurata / val.count).toFixed(1);
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${ruolo}</td>
-      <td>${mediaRpe}</td>
-      <td>${mediaDurata}</td>
-    `;
-    tabPerRuolo.appendChild(tr);
-  });
+function media(arr) {
+  const nums = arr.filter(v => !isNaN(v));
+  return nums.length ? nums.reduce((a, b) => a + b) / nums.length : 0;
 }
 
-function showLoader(show) {
-  loader.style.display = show ? 'block' : 'none';
+function formatNome(atlete, id) {
+  const a = atlete.find(a => a.id == id);
+  return a ? `${a.nome} ${a.cognome}` : id;
+}
+
+function showLoader(on) {
+  document.getElementById("loader").style.display = on ? "block" : "none";
 }

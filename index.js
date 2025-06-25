@@ -1,4 +1,5 @@
-const API_URL = "https://script.google.com/macros/s/INSERISCI_LA_TUA_URL/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx_gVYSWRtgR8IxIlbKzPz26iLnVVVhrhlTVwfVpGyHoxqJaIUjEAb77U6wvXaMpqMEng/exec";
+
 let atlete = [];
 let rpeList = [];
 
