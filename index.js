@@ -67,17 +67,26 @@ async function salvaDati() {
   const dataAllenamento = document.getElementById("dataAllenamento").value;
   const durataGenerale = document.getElementById("durataGenerale").value;
 
-  if (!dataAllenamento || !durataGenerale) {
-    alert("Compila data e durata generale.");
+  if (!dataAllenamento) {
+    alert("Compila data allenamento.");
+    return;
+  }
+  if (!durataGenerale) {
+    alert("Compila durata allenamento.");
     return;
   }
 
   const allenamenti = await leggiFileJSON(allenamentiFile);
   let allenamentoEsistente = allenamenti.find(a => a.data === dataAllenamento);
   // recupera in ordine cronologico solo l'ultimo allenamento presente nel file
-  let ultimoAllenamento =  allenamenti.sort((a, b) => new Date(a.data) - new Date(b.data));
+  allenamenti.sort((a, b) => new Date(a.data) - new Date(b.data));
   let allenamentoPrecedente = allenamenti[allenamenti.length - 1];
   let allenamentoId;
+
+  alert(allenamentoEsistente);
+  console.log(allenamentoEsistente)
+  alert(allenamentoEsistente);
+  console.log(allenamentoEsistente);
 
   if (allenamentoEsistente) {
     allenamentoId = allenamentoEsistente.id;
