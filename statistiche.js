@@ -1,10 +1,25 @@
 let token = localStorage.getItem('github_token') || '';
-document.getElementById('token').value = token;
+const tokenContainer = document.getElementById('token-container');
+const tokenInput = document.getElementById('token');
+
+if (token) {
+  // Nascondi il form token se già presente
+  tokenContainer.style.display = 'none';
+} else {
+  tokenInput.value = '';
+  tokenContainer.style.display = 'block';
+}
 
 function salvaToken() {
-  token = document.getElementById('token').value;
+  token = tokenInput.value.trim();
+  if (!token) {
+    alert('Inserisci un token valido!');
+    return;
+  }
   localStorage.setItem('github_token', token);
   alert('Token salvato localmente!');
+  tokenContainer.style.display = 'none';
+  caricaDati(); // caricamento dati appena salvato il token
 }
 
 const urlBase = 'https://raw.githubusercontent.com/mschiavo/RPE/main';
