@@ -2,12 +2,6 @@
 
 const loader = document.getElementById('loader');
 
-let token = "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";
-if (!token) {
-  alert('Token GitHub mancante. Torna alla pagina inserimento e inseriscilo.');
-  location.href = 'index.html';
-}
-
 const repo = 'mschiavo/RPE'; // Modifica se necessario
 
 const tabUltimoAllenamento = document.querySelector('#tab-ultimo-allenamento tbody');
@@ -15,6 +9,8 @@ const tabUltimaSettimana = document.querySelector('#tab-ultima-settimana tbody')
 const tabUltimoMese = document.querySelector('#tab-ultimo-mese tbody');
 const tabPerAtleta = document.querySelector('#tab-per-atleta tbody');
 const tabPerRuolo = document.querySelector('#tab-per-ruolo tbody');
+
+let token = GITHUB_TOKEN;
 
 let atlete = [];
 let allenamenti = [];
