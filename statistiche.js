@@ -1,55 +1,36 @@
-// statistiche.js - pagina visualizzazione statistiche
+// statistiche.js - gestione visualizzazione tabelle statistiche
 
-const tokenContainer = document.getElementById('token-container');
-const tokenInput = document.getElementById('token');
-const tokenSalvaBtn = document.getElementById('token-salva-btn');
-let token = localStorage.getItem('github_token') || '';
+const loader = document.getElementById('loader');
 
-if (token) {
-  tokenContainer.style.display = 'none';
-} else {
-  tokenContainer.style.display = 'block';
+const token = localStorage.getItem('github_token');
+if (!token) {
+  alert('Token GitHub mancante. Torna alla pagina inserimento e inseriscilo.');
+  location.href = 'index.html';
 }
 
-tokenSalvaBtn.addEventListener('click', () => {
-  const val = tokenInput.value.trim();
-  if (!val) {
-    alert('Inserisci un token GitHub valido');
-    return;
-  }
-  token = val;
-  localStorage.setItem('github_token', token);
-  alert('Token salvato localmente!');
-  tokenContainer.style.display = 'none';
-  caricaDati();
-});
+const repo = 'mschiavo/RPE'; // Modifica se necessario
 
-window.onload = () => {
-  if (token) {
-    caricaDati();
-  }
-};
+const tabUltimoAllenamento = document.querySelector('#tab-ultimo-allenamento tbody');
+const tabUltimaSettimana = document.querySelector('#tab-ultima-settimana tbody');
+const tabUltimoMese = document.querySelector('#tab-ultimo-mese tbody');
+const tabPerAtleta = document.querySelector('#tab-per-atleta tbody');
+const tabPerRuolo = document.querySelector('#tab-per-ruolo tbody');
 
-async function caricaDati() {
+let atlete = [];
+let allenamenti = [];
+let rpeList = [];
+
+init();
+
+async function init() {
   showLoader(true);
   try {
-    const atlete = await fetchJSON('atlete.json');
-    const rpeList = await fetchJSON('rpe.json');
-    const allenamenti = await fetchJSON('allenamenti.json');
-    const rpeData = await fetchJSON('rpe_atleta_allenamento.json');
-
-    // Mappa dati per accesso veloce
-    const mapAtlete = Object.fromEntries(atlete.map(a => [a.id, a]));
-    const mapAllenamenti = Object.fromEntries(allenamenti.map(a => [a.id, a]));
-    const mapRPE = Object.fromEntries(rpeList.map(r => [r.id, r]));
-
-    // Visualizza tutte le tabelle
-    stampaTabellaUltimoAllenamento(rpeData, mapAtlete, mapAllenamenti, mapRPE);
-    stampaTabellaMediaPeriodi(rpeData, mapAtlete, mapAllenamenti, mapRPE, 7, 'ultimaSettimana', 'Ultimi 7 giorni');
-    stampaTabellaMediaPeriodi(rpeData, mapAtlete, mapAllenamenti, mapRPE, 30, 'ultimoMese', 'Ultimi 30 giorni');
-    stampaTabellaPerAtleta(rpeData, mapAtlete, mapRPE, 'perAtleta', 'Voti per atleta');
-    stampaTabellaPerRuolo(rpeData, mapAtlete, mapRPE, 'perRuolo', 'Voti per ruolo');
-
+    [atlete, rpeList, allenamenti] = await Promise.all([
+      fetchJSON('atlete.json'),
+      fetchJSON('rpe.json'),
+      fetchAllenamenti()
+    ]);
+    popolaTabelle();
   } catch (err) {
     alert('Errore caricamento dati: ' + err.message);
   }
@@ -62,203 +43,206 @@ async function fetchJSON(filename) {
   return resp.json();
 }
 
-function showLoader(show) {
-  const loader = document.getElementById('loader');
-  loader.style.display = show ? 'block' : 'none';
+async function fetchAllenamenti() {
+  // Prendo allenamenti da GitHub
+  const url = `https://api.github.com/repos/${repo}/contents/allenamenti.json`;
+  const resp = await fetch(url, {
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github.v3+json'
+    }
+  });
+  if (resp.status === 404) return [];
+  if (!resp.ok) throw new Error('Errore nel caricamento degli allenamenti');
+  const json = await resp.json();
+  const content = atob(json.content.replace(/\n/g, ''));
+  return JSON.parse(content);
 }
 
-function stampaTabellaUltimoAllenamento(rpeData, mapAtlete, mapAllenamenti, mapRPE) {
-  // Trova data ultimo allenamento
-  const dateUltimo = new Date(Math.max(...Object.values(mapAllenamenti).map(a => new Date(a.data))));
-  const ultimoAllenamento = Object.values(mapAllenamenti).find(a => new Date(a.data).getTime() === dateUltimo.getTime());
-  if (!ultimoAllenamento) return;
-
-  const datiUltimo = rpeData.filter(d => d.allenamento_id === ultimoAllenamento.id);
-
-  const container = document.getElementById('ultimoAllenamento');
-  container.innerHTML = `<h2 class="text-xl font-bold mb-2">Voti ultimo allenamento (${ultimoAllenamento.data})</h2>`;
-  container.appendChild(creaTabella(datiUltimo, mapAtlete, mapRPE));
+// Trova atleta per id
+function getAtletaById(id) {
+  return atlete.find(a => a.id === id);
+}
+// Trova RPE per id
+function getRPEById(id) {
+  return rpeList.find(r => r.id === id);
 }
 
-function stampaTabellaMediaPeriodi(rpeData, mapAtlete, mapAllenamenti, mapRPE, giorni, containerId, titolo) {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - giorni);
+// Funzione per popolare tutte le tabelle
+function popolaTabelle() {
+  if (allenamenti.length === 0) {
+    const vuotoRow = '<tr><td colspan="5" style="text-align:center;">Nessun dato disponibile</td></tr>';
+    tabUltimoAllenamento.innerHTML = vuotoRow;
+    tabUltimaSettimana.innerHTML = vuotoRow;
+    tabUltimoMese.innerHTML = vuotoRow;
+    tabPerAtleta.innerHTML = vuotoRow;
+    tabPerRuolo.innerHTML = vuotoRow;
+    return;
+  }
 
-  const datiFiltrati = rpeData.filter(d => {
-    const dataAllenamento = new Date(mapAllenamenti[d.allenamento_id]?.data);
-    return dataAllenamento >= cutoff;
-  });
+  // 1) Voti ultimo allenamento
+  const ultimoData = getUltimaData(allenamenti);
+  const allenamentoUltimo = allenamenti.filter(a => a.data.startsWith(ultimoData));
+  popolaTabUltimoAllenamento(allenamentoUltimo);
 
-  // Raggruppa per atleta e calcola medie
-  const grouped = {};
-  datiFiltrati.forEach(d => {
-    const rpeVal = mapRPE[d.rpe_id]?.valore || 0;
-    const durata = mapAllenamenti[d.allenamento_id]?.durata || 0;
-    if (!grouped[d.atleta_id]) grouped[d.atleta_id] = { totaleRPE: 0, totaleDurata: 0, count: 0 };
-    grouped[d.atleta_id].totaleRPE += rpeVal;
-    grouped[d.atleta_id].totaleDurata += durata;
-    grouped[d.atleta_id].count++;
-  });
+  // 2) Voti medi ultima settimana (7 giorni precedenti incluso oggi)
+  const settimanaDataMin = new Date();
+  settimanaDataMin.setDate(settimanaDataMin.getDate() - 6);
+  popolaTabAggregata(allenamenti.filter(a => new Date(a.data) >= settimanaDataMin), tabUltimaSettimana);
 
-  const rows = Object.entries(grouped).map(([atletaId, stats]) => {
-    const atleta = mapAtlete[atletaId];
-    return {
-      nome: atleta ? `${atleta.nome} ${atleta.cognome}` : 'Sconosciuto',
-      mediaRPE: (stats.totaleRPE / stats.count).toFixed(2),
-      mediaDurata: (stats.totaleDurata / stats.count).toFixed(2)
-    };
-  });
+  // 3) Voti medi ultimo mese (30 giorni precedenti incluso oggi)
+  const meseDataMin = new Date();
+  meseDataMin.setDate(meseDataMin.getDate() - 29);
+  popolaTabAggregata(allenamenti.filter(a => new Date(a.data) >= meseDataMin), tabUltimoMese);
 
-  const container = document.getElementById(containerId);
-  container.innerHTML = `
-    <h2 class="text-xl font-bold mb-2">${titolo}</h2>
-    <div class="overflow-auto">
-      <table class="min-w-full bg-white rounded shadow">
-        <thead>
-          <tr class="bg-gray-200 text-left">
-            <th class="p-2">Atleta</th>
-            <th class="p-2">RPE medio</th>
-            <th class="p-2">Durata media (min)</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr class="border-t">
-              <td class="p-2">${r.nome}</td>
-              <td class="p-2">${r.mediaRPE}</td>
-              <td class="p-2">${r.mediaDurata}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+  // 4) Voti per atleta (tutti)
+  popolaTabPerAtleta(allenamenti);
+
+  // 5) Voti per ruolo (tutti)
+  popolaTabPerRuolo(allenamenti);
 }
 
-function stampaTabellaPerAtleta(rpeData, mapAtlete, mapRPE, containerId, titolo) {
-  const grouped = {};
-  rpeData.forEach(d => {
-    const rpeVal = mapRPE[d.rpe_id]?.valore || 0;
-    if (!grouped[d.atleta_id]) grouped[d.atleta_id] = { totaleRPE: 0, count: 0 };
-    grouped[d.atleta_id].totaleRPE += rpeVal;
-    grouped[d.atleta_id].count++;
-  });
-
-  const rows = Object.entries(grouped).map(([atletaId, stats]) => {
-    const atleta = mapAtlete[atletaId];
-    return {
-      nome: atleta ? `${atleta.nome} ${atleta.cognome}` : 'Sconosciuto',
-      mediaRPE: (stats.totaleRPE / stats.count).toFixed(2),
-    };
-  });
-
-  const container = document.getElementById(containerId);
-  container.innerHTML = `
-    <h2 class="text-xl font-bold mb-2">${titolo}</h2>
-    <div class="overflow-auto">
-      <table class="min-w-full bg-white rounded shadow">
-        <thead>
-          <tr class="bg-gray-200 text-left">
-            <th class="p-2">Atleta</th>
-            <th class="p-2">RPE medio</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr class="border-t">
-              <td class="p-2">${r.nome}</td>
-              <td class="p-2">${r.mediaRPE}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+function getUltimaData(allenamenti) {
+  // Prendo la data massima YYYY-MM-DD (senza orario)
+  const dates = allenamenti.map(a => a.data.substring(0, 10));
+  return dates.reduce((max, curr) => (curr > max ? curr : max), '0000-00-00');
 }
 
-function stampaTabellaPerRuolo(rpeData, mapAtlete, mapRPE, containerId, titolo) {
-  const grouped = {};
-  rpeData.forEach(d => {
-    const rpeVal = mapRPE[d.rpe_id]?.valore || 0;
-    const atleta = mapAtlete[d.atleta_id];
-    if (!atleta) return;
-    const ruolo = atleta.ruolo || 'Sconosciuto';
-    if (!grouped[ruolo]) grouped[ruolo] = { totaleRPE: 0, count: 0 };
-    grouped[ruolo].totaleRPE += rpeVal;
-    grouped[ruolo].count++;
-  });
-
-  const rows = Object.entries(grouped).map(([ruolo, stats]) => {
-    return {
-      ruolo,
-      mediaRPE: (stats.totaleRPE / stats.count).toFixed(2)
-    };
-  });
-
-  const container = document.getElementById(containerId);
-  container.innerHTML = `
-    <h2 class="text-xl font-bold mb-2">${titolo}</h2>
-    <div class="overflow-auto">
-      <table class="min-w-full bg-white rounded shadow">
-        <thead>
-          <tr class="bg-gray-200 text-left">
-            <th class="p-2">Ruolo</th>
-            <th class="p-2">RPE medio</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => `
-            <tr class="border-t">
-              <td class="p-2">${r.ruolo}</td>
-              <td class="p-2">${r.mediaRPE}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function creaTabella(dati, mapAtlete, mapRPE) {
-  const table = document.createElement('table');
-  table.className = 'min-w-full bg-white rounded shadow';
-
-  const thead = document.createElement('thead');
-  thead.innerHTML = `
-    <tr class="bg-gray-200 text-left">
-      <th class="p-2">Atleta</th>
-      <th class="p-2">RPE</th>
-      <th class="p-2">Descrizione</th>
-    </tr>
-  `;
-  table.appendChild(thead);
-
-  const tbody = document.createElement('tbody');
+function popolaTabUltimoAllenamento(dati) {
+  if (dati.length === 0) {
+    tabUltimoAllenamento.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun dato disponibile</td></tr>';
+    return;
+  }
+  tabUltimoAllenamento.innerHTML = '';
 
   dati.forEach(d => {
-    const atleta = mapAtlete[d.atleta_id];
-    const rpe = mapRPE[d.rpe_id];
+    const atleta = getAtletaById(d.atleta_id);
+    const rpe = getRPEById(d.rpe_id);
+    if (!atleta || !rpe) return;
+
     const tr = document.createElement('tr');
-    tr.className = 'border-t';
+    tr.innerHTML = `
+      <td>${atleta.nome}</td>
+      <td>${atleta.ruolo || ''}</td>
+      <td>${rpe.valore}</td>
+      <td>${d.durata ?? ''}</td>
+      <td>${d.data.substring(0,10)}</td>
+    `;
+    tabUltimoAllenamento.appendChild(tr);
+  });
+}
 
-    const tdNome = document.createElement('td');
-    tdNome.className = 'p-2';
-    tdNome.textContent = atleta ? `${atleta.nome} ${atleta.cognome}` : 'Sconosciuto';
+// Funzione per aggregare dati per atleta (media rpe e durata) e popolare tabella passata
+function popolaTabAggregata(dati, tbody) {
+  if (dati.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun dato disponibile</td></tr>';
+    return;
+  }
+  // Raggruppa per atleta id
+  const map = new Map();
 
-    const tdRPE = document.createElement('td');
-    tdRPE.className = 'p-2';
-    tdRPE.textContent = rpe ? rpe.valore : 'N/A';
-
-    const tdDescr = document.createElement('td');
-    tdDescr.className = 'p-2';
-    tdDescr.textContent = rpe ? rpe.descrizione : '';
-
-    tr.appendChild(tdNome);
-    tr.appendChild(tdRPE);
-    tr.appendChild(tdDescr);
-    tbody.appendChild(tr);
+  dati.forEach(d => {
+    if (!map.has(d.atleta_id)) {
+      map.set(d.atleta_id, { count: 0, sommaRpe: 0, sommaDurata: 0 });
+    }
+    const obj = map.get(d.atleta_id);
+    obj.count++;
+    const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
+    obj.sommaRpe += rpeVal;
+    obj.sommaDurata += d.durata ?? 0;
   });
 
-  table.appendChild(tbody);
-  return table;
+  tbody.innerHTML = '';
+  map.forEach((val, atletaId) => {
+    const atleta = getAtletaById(atletaId);
+    if (!atleta) return;
+    const mediaRpe = (val.sommaRpe / val.count).toFixed(2);
+    const mediaDurata = (val.sommaDurata / val.count).toFixed(1);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${atleta.nome}</td>
+      <td>${mediaRpe}</td>
+      <td>${mediaDurata}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function popolaTabPerAtleta(dati) {
+  if (dati.length === 0) {
+    tabPerAtleta.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nessun dato disponibile</td></tr>';
+    return;
+  }
+  const map = new Map();
+
+  dati.forEach(d => {
+    if (!map.has(d.atleta_id)) {
+      map.set(d.atleta_id, { count: 0, sommaRpe: 0, sommaDurata: 0 });
+    }
+    const obj = map.get(d.atleta_id);
+    obj.count++;
+    const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
+    obj.sommaRpe += rpeVal;
+    obj.sommaDurata += d.durata ?? 0;
+  });
+
+  tabPerAtleta.innerHTML = '';
+  map.forEach((val, atletaId) => {
+    const atleta = getAtletaById(atletaId);
+    if (!atleta) return;
+    const mediaRpe = (val.sommaRpe / val.count).toFixed(2);
+    const mediaDurata = (val.sommaDurata / val.count).toFixed(1);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${atleta.nome}</td>
+      <td>${atleta.ruolo || ''}</td>
+      <td>${val.count}</td>
+      <td>${mediaRpe}</td>
+      <td>${mediaDurata}</td>
+    `;
+    tabPerAtleta.appendChild(tr);
+  });
+}
+
+function popolaTabPerRuolo(dati) {
+  if (dati.length === 0) {
+    tabPerRuolo.innerHTML = '<tr><td colspan="3" style="text-align:center;">Nessun dato disponibile</td></tr>';
+    return;
+  }
+  const map = new Map();
+
+  dati.forEach(d => {
+    const atleta = getAtletaById(d.atleta_id);
+    if (!atleta) return;
+    const ruolo = atleta.ruolo || 'Sconosciuto';
+
+    if (!map.has(ruolo)) {
+      map.set(ruolo, { count: 0, sommaRpe: 0, sommaDurata: 0 });
+    }
+    const obj = map.get(ruolo);
+    obj.count++;
+    const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
+    obj.sommaRpe += rpeVal;
+    obj.sommaDurata += d.durata ?? 0;
+  });
+
+  tabPerRuolo.innerHTML = '';
+  map.forEach((val, ruolo) => {
+    const mediaRpe = (val.sommaRpe / val.count).toFixed(2);
+    const mediaDurata = (val.sommaDurata / val.count).toFixed(1);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${ruolo}</td>
+      <td>${mediaRpe}</td>
+      <td>${mediaDurata}</td>
+    `;
+    tabPerRuolo.appendChild(tr);
+  });
+}
+
+function showLoader(show) {
+  loader.style.display = show ? 'block' : 'none';
 }
