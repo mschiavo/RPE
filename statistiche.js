@@ -19,16 +19,18 @@ const tabPerRuolo = document.querySelector('#tab-per-ruolo tbody');
 let atlete = [];
 let allenamenti = [];
 let rpeList = [];
+let rpeData = [];
 
 init();
 
 async function init() {
   showLoader(true);
   try {
-    [atlete, rpeList, allenamenti] = await Promise.all([
+    [atlete, rpeList, allenamenti, rpeData] = await Promise.all([
       fetchJSON('atlete.json'),
       fetchJSON('rpe.json'),
-      fetchAllenamenti()
+      fetchAllenamenti(),
+      fetchJSON('rpe_data.json')
     ]);
     popolaTabelle();
   } catch (err) {
@@ -83,23 +85,26 @@ function popolaTabelle() {
   // 1) Voti ultimo allenamento
   const ultimoData = getUltimaData(allenamenti);
   const allenamentoUltimo = allenamenti.filter(a => a.data.startsWith(ultimoData));
-  popolaTabUltimoAllenamento(allenamentoUltimo);
+  const datiAllenamentoUltimo = rpeData.filter(d => allenamentoUltimo.some(a => a.id === d.allenamento_id));
+  popolaTabUltimoAllenamento(datiAllenamentoUltimo);
 
   // 2) Voti medi ultima settimana (7 giorni precedenti incluso oggi)
   const settimanaDataMin = new Date();
   settimanaDataMin.setDate(settimanaDataMin.getDate() - 6);
-  popolaTabAggregata(allenamenti.filter(a => new Date(a.data) >= settimanaDataMin), tabUltimaSettimana);
+  let filterAllenamentiUltimaSettimana = allenamenti.filter(a => new Date(a.data) >= settimanaDataMin);
+  popolaTabAggregata(rpeData.filter(d => filterAllenamentiUltimaSettimana.some(a => a.id === d.allenamento_id)), tabUltimaSettimana);
 
   // 3) Voti medi ultimo mese (30 giorni precedenti incluso oggi)
   const meseDataMin = new Date();
   meseDataMin.setDate(meseDataMin.getDate() - 29);
-  popolaTabAggregata(allenamenti.filter(a => new Date(a.data) >= meseDataMin), tabUltimoMese);
+  let filterAllenamentiUltimoMese = allenamenti.filter(a => new Date(a.data) >= meseDataMin);
+  popolaTabAggregata(rpeData.filter(d => filterAllenamentiUltimoMese.some(a => a.id === d.allenamento_id)), tabUltimoMese);
 
   // 4) Voti per atleta (tutti)
-  popolaTabPerAtleta(allenamenti);
+  popolaTabPerAtleta(rpeData);
 
   // 5) Voti per ruolo (tutti)
-  popolaTabPerRuolo(allenamenti);
+  popolaTabPerRuolo(rpeData);
 }
 
 function getUltimaData(allenamenti) {
