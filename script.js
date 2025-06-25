@@ -19,7 +19,9 @@ function salvaToken() {
   localStorage.setItem('github_token', token);
   alert('Token salvato localmente!');
   tokenContainer.style.display = 'none';
-  caricaDati(); // caricamento dati appena salvato il token
+  window.onload = () => {
+    if (token) caricaDati();
+  };
 }
 
 async function caricaDati() {
