@@ -154,15 +154,15 @@ function popolaTabAggregata(dati, tbody) {
     obj.count++;
     const rpeVal = getRPEById(d.rpe_id)?.valore ?? 0;
     obj.sommaRpe += rpeVal;
-    obj.sommaDurata += d.durata ?? 0;
+    obj.sommaDurata += d.durata ?? ``;
   });
 
   tbody.innerHTML = '';
   map.forEach((val, atletaId) => {
     const atleta = getAtletaById(atletaId);
     if (!atleta) return;
-    const mediaRpe = (val.sommaRpe / val.count).toFixed(2);
-    const mediaDurata = (val.sommaDurata / val.count).toFixed(1);
+    const mediaRpe = (parseInt(val.sommaRpe) / val.count).toFixed(2);
+    const mediaDurata = (parseInt(val.sommaDurata) / val.count).toFixed(1);
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
