@@ -4,7 +4,7 @@ const allenamentiFile = "allenamenti.json";
 const rpeDataFile = "rpe_data.json";
 let atlete = [];
 let rpeList = [];
-let token = localStorage.getItem("github_token");
+let token = "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";
 
 document.addEventListener("DOMContentLoaded", async () => {
   if (token) {
