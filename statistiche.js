@@ -2,7 +2,7 @@
 
 const loader = document.getElementById('loader');
 
-let token = "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";
+let token = "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";
 if (!token) {
   alert('Token GitHub mancante. Torna alla pagina inserimento e inseriscilo.');
   location.href = 'index.html';
