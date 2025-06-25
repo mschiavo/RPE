@@ -1,31 +1,37 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inserimento RPE</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Inserimento RPE</title>
+    <link rel="stylesheet" href="stile.css"/>
 </head>
 <body>
-  <header>Inserimento RPE</header>
+<header>Inserimento RPE</header>
 
-  <a href="statistiche.html">Statistiche →</a>
+<a href="statistiche.html">Vai alle statistiche →</a>
 
-  <div class="mb-4">
+<div id="token-container" class="mb-4">
+    <label for="token">Token GitHub</label>
+    <input id="token" type="password" placeholder="ghp_..."/>
+    <button id="salva-token">Salva token</button>
+</div>
+
+<div class="mb-4">
     <label for="dataAllenamento">Data</label>
-    <input type="date" id="dataAllenamento" />
-  </div>
-  <div class="mb-4">
-    <label for="durataGenerale">Durata generale (min)</label>
-    <input type="number" id="durataGenerale" />
-  </div>
+    <input type="date" id="dataAllenamento"/>
+</div>
+<div class="mb-4">
+    <label for="durataGenerale">Durata generale (minuti)</label>
+    <input type="number" id="durataGenerale"/>
+</div>
 
-  <div id="atleteContainer" class="mb-4"></div>
+<div id="atleteContainer"></div>
 
-  <button onclick="salvaDati()">Salva Dati</button>
+<button id="salvaDatiBtn">Salva Dati</button>
 
-  <div id="loader" style="display:none;">⏳ Caricamento...</div>
+<div id="loader" style="display:none;">⏳ Caricamento...</div>
 
-  <script src="index.js"></script>
+<script src="index.js"></script>
 </body>
 </html>
