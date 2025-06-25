@@ -1,1 +1,1 @@
-const GITHUB_TOKEN = "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";
+const FALLBACK_GIST_TOKEN = "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";
