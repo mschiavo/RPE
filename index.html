@@ -29,18 +29,5 @@
         </button>
 
         <script src="index.js"></script>
-        <script src="token-loader.js"></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", async () => {
-                try {
-                    token = await initToken(); // ora disponibile ovunque
-                    const script = document.createElement("script");
-                    script.src = "index.js"; // o "statistiche.js"
-                    document.body.appendChild(script);
-                } catch (e) {
-                    console.error("Token mancante o invalido");
-                }
-            });
-        </script>
     </body>
 </html>
