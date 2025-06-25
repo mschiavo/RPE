@@ -1,11 +1,25 @@
 let token = localStorage.getItem('github_token') || '';
+const tokenContainer = document.getElementById('token-container');
 const tokenInput = document.getElementById('token');
-if (tokenInput && token) tokenInput.value = token;
+
+if (token) {
+  // Nascondi il form token se già presente
+  tokenContainer.style.display = 'none';
+} else {
+  tokenInput.value = '';
+  tokenContainer.style.display = 'block';
+}
 
 function salvaToken() {
-  token = tokenInput.value;
+  token = tokenInput.value.trim();
+  if (!token) {
+    alert('Inserisci un token valido!');
+    return;
+  }
   localStorage.setItem('github_token', token);
   alert('Token salvato localmente!');
+  tokenContainer.style.display = 'none';
+  caricaDati(); // caricamento dati appena salvato il token
 }
 
 async function caricaDati() {
