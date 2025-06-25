@@ -1,97 +1,18 @@
 <!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Statistiche RPE - Allenamenti</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header>Statistiche RPE - Allenamenti</header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistiche RPE</title>
+  <link rel="stylesheet" href="stile.css" />
+</head>
+<body>
+  <header>Statistiche RPE</header>
+  <a href="index.html">← Torna a inserimento</a>
 
-    <a href="index.html" id="link-inserimento">Inserimento RPE</a>
+  <div id="loader">⏳ Caricamento dati...</div>
+  <div id="tabelle"></div>
 
-    <div id="loader">Caricamento dati...</div>
-
-    <table id="tab-ultimo-allenamento" aria-label="Voti ultimo allenamento">
-      <caption>Voti dell'ultimo allenamento</caption>
-      <thead>
-        <tr>
-          <th>Atleta</th>
-          <th>Ruolo</th>
-          <th>RPE</th>
-          <th>Durata (min)</th>
-          <th>Data</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <table id="tab-ultima-settimana" aria-label="Voti ultima settimana">
-      <caption>Voti medi dell'ultima settimana</caption>
-      <thead>
-        <tr>
-          <th>Atleta</th>
-          <th>RPE medio</th>
-          <th>Durata media (min)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <table id="tab-ultimo-mese" aria-label="Voti ultimo mese">
-      <caption>Voti medi dell'ultimo mese</caption>
-      <thead>
-        <tr>
-          <th>Atleta</th>
-          <th>RPE medio</th>
-          <th>Durata media (min)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <table id="tab-per-atleta" aria-label="Voti per atleta">
-      <caption>Voti per atleta (tutti gli allenamenti)</caption>
-      <thead>
-        <tr>
-          <th>Atleta</th>
-          <th>Ruolo</th>
-          <th>Numero allenamenti</th>
-          <th>RPE medio</th>
-          <th>Durata media (min)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <table id="tab-per-ruolo" aria-label="Voti per ruolo">
-      <caption>Voti medi per ruolo (tutti gli allenamenti)</caption>
-      <thead>
-        <tr>
-          <th>Ruolo</th>
-          <th>RPE medio</th>
-          <th>Durata media (min)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <script src="statistiche.js"></script>
-    <script src="token-loader.js"></script>
-    <script>
-      let token;
-      document.addEventListener("DOMContentLoaded", async () => {
-        try {
-          token = await initToken(); // ora disponibile ovunque
-          const script = document.createElement("script");
-          script.src = "statistiche.js"; // o "statistiche.js"
-          document.body.appendChild(script);
-        } catch (e) {
-          console.error("Token mancante o invalido");
-        }
-      });
-    </script>
-
-  </body>
+  <script src="statistiche.js"></script>
+</body>
 </html>
