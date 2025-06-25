@@ -119,9 +119,18 @@ async function salvaDati() {
 }
 
 async function leggiFileJSON(file) {
-  const res = await fetch(`https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${file}?${Date.now()}`);
-  if (!res.ok) return [];
-  return await res.json();
+  const url = `https://raw.githubusercontent.com/${repoOwner}/${repoName}/main/${file}?${Date.now()}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `token ${token}`
+    }
+  });
+
+  if (!res.ok) throw new Error(`Errore nel caricamento di ${nomeFile}`);
+
+  const data = await res.json();
+  const contentDecoded = atob(data.content);
+  return JSON.parse(contentDecoded);
 }
 
 async function scriviFileJSON(fileName, data) {
