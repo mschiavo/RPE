@@ -87,4 +87,125 @@ function popolaGrigliaAtlete() {
     div.appendChild(nome);
     div.appendChild(ruolo);
     div.appendChild(durataInput);
-    div.appendChild(selectR
+    div.appendChild(selectRPE);
+
+    grigliaContainer.appendChild(div);
+  });
+}
+
+btnSalva.addEventListener('click', async () => {
+  const durataGenerica = durataGenericaInput.value.trim();
+  if (durataGenerica && isNaN(durataGenerica)) {
+    alert('La durata generica deve essere un numero valido');
+    return;
+  }
+
+  const datiAllenamento = [];
+  let tuttiCompilati = true;
+
+  const cards = grigliaContainer.querySelectorAll('.atleta-card');
+  cards.forEach((card, i) => {
+    const atleta = atlete[i];
+    const durataInput = card.querySelector('input.durata-input');
+    const selectRPE = card.querySelector('select');
+
+    const durata = durataInput.value.trim() || durataGenerica || null;
+    if (!durata) {
+      tuttiCompilati = false;
+    }
+
+    const rpeId = selectRPE.value;
+
+    datiAllenamento.push({
+      atleta_id: atleta.id,
+      rpe_id: rpeId,
+      durata: durata ? Number(durata) : null,
+      data: new Date().toISOString()
+    });
+  });
+
+  if (!tuttiCompilati) {
+    if (!confirm('Alcune durate non sono state inserite. Vuoi continuare comunque?')) {
+      return;
+    }
+  }
+
+  try {
+    showLoader(true);
+    await salvaAllenamento(datiAllenamento);
+    alert('Allenamento salvato con successo!');
+  } catch (err) {
+    alert('Errore nel salvataggio: ' + err.message);
+  }
+  showLoader(false);
+});
+
+async function salvaAllenamento(dati) {
+  if (!token) throw new Error('Token GitHub mancante.');
+
+  const repo = 'mschiavo/RPE';
+  const path = 'allenamenti.json';
+
+  // Prima leggo il file esistente (se c'è)
+  let contenutoPrecedente = [];
+  try {
+    const fileResp = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3+json'
+      }
+    });
+    if (fileResp.status === 200) {
+      const fileJson = await fileResp.json();
+      const contentDecoded = atob(fileJson.content.replace(/\n/g, ''));
+      contenutoPrecedente = JSON.parse(contentDecoded);
+    } else if (fileResp.status !== 404) {
+      throw new Error('Errore caricamento file su GitHub');
+    }
+  } catch (err) {
+    if (!err.message.includes('404')) throw err;
+  }
+
+  // Aggiungo i nuovi dati
+  const datiAggiornati = contenutoPrecedente.concat(dati);
+
+  // Devo fare il commit
+  // Prima prendo il sha del file se esiste (per aggiornare)
+  let sha = null;
+  try {
+    const fileInfoResp = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      headers: {
+        Authorization: `token ${token}`,
+        Accept: 'application/vnd.github.v3+json'
+      }
+    });
+    if (fileInfoResp.status === 200) {
+      const fileInfoJson = await fileInfoResp.json();
+      sha = fileInfoJson.sha;
+    }
+  } catch { /* ignoro */ }
+
+  const contentBase64 = btoa(JSON.stringify(datiAggiornati, null, 2));
+
+  const commitResp = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      message: `Aggiornamento allenamenti ${new Date().toISOString()}`,
+      content: contentBase64,
+      sha: sha
+    })
+  });
+
+  if (!commitResp.ok) {
+    const errText = await commitResp.text();
+    throw new Error('Errore commit su GitHub: ' + errText);
+  }
+}
+
+function showLoader(show) {
+  loader.style.display = show ? 'block' : 'none';
+}
