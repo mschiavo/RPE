@@ -70,13 +70,16 @@ async function salvaDati() {
 
   const allenamenti = await leggiFileJSON(allenamentiFile);
   let allenamentoEsistente = allenamenti.find(a => a.data === dataAllenamento);
+  // recupera in ordine cronologico solo l'ultimo allenamento presente nel file
+  let ultimoAllenamento =  allenamenti.sort((a, b) => new Date(a.data) - new Date(b.data));
+  let allenamentoPrecedente = allenamenti[allenamenti.length - 1];
   let allenamentoId;
 
   if (allenamentoEsistente) {
     allenamentoId = allenamentoEsistente.id;
     alert("Allenamento già presente per questa data. Userò l’ID esistente.");
   } else {
-    allenamentoId = Date.now();
+    allenamentoId = allenamentoPrecedente.id + 1;
     allenamenti.push({
       id: allenamentoId,
       data: dataAllenamento,
