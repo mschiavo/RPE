@@ -83,6 +83,9 @@ async function pushData(path, obj) {
     });
 }
 
-function showLoader(v) {
-    document.getElementById("loader").style.display = v ? "block" : "none";
+function showLoader(show) {
+    const loader = document.getElementById("overlay-loader");
+    if (!loader) return;
+    loader.classList.toggle("hidden", !show);
 }
+

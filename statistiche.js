@@ -109,6 +109,8 @@ function media(arr) {
     return arr.length ? arr.reduce((a, b) => a + b) / arr.length : 0;
 }
 
-function showLoader(on) {
-    document.getElementById("loader").style.display = on ? "block" : "none";
+function showLoader(show) {
+    const loader = document.getElementById("overlay-loader");
+    if (!loader) return;
+    loader.classList.toggle("hidden", !show);
 }
