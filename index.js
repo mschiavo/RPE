@@ -19,6 +19,7 @@ async function fetchData(path) {
         .map(([id, val]) => ({ ...val, id }));
 }
 
+/*
 function renderAtlete() {
     const container = document.getElementById("atleteContainer");
     container.innerHTML = "";
@@ -34,6 +35,47 @@ function renderAtlete() {
         container.appendChild(div);
     });
 }
+*/
+
+function renderAtlete() {
+    const container = document.getElementById("atleteContainer");
+    container.innerHTML = "";
+
+    atlete.forEach(a => {
+        const div = document.createElement("div");
+        div.classList.add("card-atleta");
+
+        const rpeButtons = rpeList.map(r => `
+      <button type="button" class="rpe-btn" data-atleta="${a.id}" data-rpe="${r.id}">
+        ${r.valore}
+        <span class="tooltip">${r.descrizione}</span>
+      </button>
+    `).join("");
+
+        div.innerHTML = `
+      <h3>${a.nome} ${a.cognome}</h3>
+      <div class="rpe-grid">${rpeButtons}</div>
+      <input id="durata-${a.id}" type="number" placeholder="Durata (opzionale)" />
+    `;
+
+        container.appendChild(div);
+    });
+
+    // Aggiungi gestione click su pulsanti RPE
+    document.querySelectorAll(".rpe-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const atletaId = btn.dataset.atleta;
+            const value = btn.dataset.rpe;
+            document.querySelectorAll(`.rpe-btn[data-atleta="${atletaId}"]`).forEach(b => {
+                b.classList.remove("selected");
+            });
+            btn.classList.add("selected");
+        });
+    });
+
+    document.getElementById("salvaDatiBtn").addEventListener("click", salvaDati);
+}
+
 
 async function salvaDati() {
     const data = document.getElementById("dataAllenamento").value;
@@ -59,16 +101,25 @@ async function salvaDati() {
     }
 
     for (let a of atlete) {
-        const durataSpecifica = document.getElementById(`durata-${a.id}`).value;
-        const rpe_id = document.getElementById(`rpe-${a.id}`).value;
+        const nuoviRPE = atlete.map(a => {
+            const durataSpecifica = document.getElementById(`durata-${a.id}`).value;
+            const selectedBtn = document.querySelector(`.rpe-btn.selected[data-atleta="${a.id}"]`);
+            const rpe_id = selectedBtn ? selectedBtn.dataset.rpe : null;
 
-        await pushData("rpe_data", {
-            atleta_id: a.id,
-            allenamento_id,
-            rpe_id,
-            data,
-            durata: durataSpecifica || durataGen
+            return {
+                atleta_id: a.id,
+                rpe_id,
+                durata: durataSpecifica || durataGen,
+                data,
+                allenamento_id
+            };
         });
+    }
+
+    if (nuoviRPE.some(r => !r.rpe_id)) {
+        alert("Seleziona un RPE per ogni atleta");
+        showLoader(false);
+        return;
     }
 
     showLoader(false);
