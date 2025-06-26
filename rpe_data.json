@@ -397,5 +397,103 @@
     "rpe_id": "5",
     "data": "2025-06-25",
     "durata": "77"
+  },
+  {
+    "atleta_id": "1",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "2",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "3",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "4",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "5",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "6",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "7",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "8",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "9",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "10",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "11",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "12",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "13",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
+  },
+  {
+    "atleta_id": "14",
+    "allenamento_id": 1750869650809,
+    "rpe_id": "0",
+    "data": "2025-06-19",
+    "durata": "90"
   }
 ]
