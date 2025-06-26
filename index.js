@@ -72,7 +72,7 @@ function renderAtlete() {
             btn.classList.add("selected");
         });
     });
-    
+
 }
 
 
