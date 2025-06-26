@@ -1,0 +1,30 @@
+{"atlete":{
+  "1":{ "id": "1", "nome": "Giulia", "cognome": "Rossi", "numero_maglia": "1", "ruolo": "Palleggio" },
+  "2":{ "id": "2", "nome": "Linda", "cognome": "Bianchi", "numero_maglia": "2", "ruolo": "Palleggio" },
+  "3":{ "id": "3", "nome": "Giulia", "cognome": "Bianchi", "numero_maglia": "3", "ruolo": "Libero" },
+  "4":{ "id": "4", "nome": "Giulia", "cognome": "Bianchi", "numero_maglia": "4", "ruolo": "Libero" },
+  "5":{ "id": "5", "nome": "Eleonora", "cognome": "Bianchi", "numero_maglia": "5", "ruolo": "Banda" },
+  "6":{ "id": "6", "nome": "Alessia", "cognome": "Bianchi", "numero_maglia": "6", "ruolo": "Banda" },
+  "7":{ "id": "7", "nome": "Giulia", "cognome": "Bianchi", "numero_maglia": "7", "ruolo": "Banda" },
+  "8":{ "id": "8", "nome": "Lara", "cognome": "Bianchi", "numero_maglia": "8", "ruolo": "Banda" },
+  "9":{ "id": "9", "nome": "Giada", "cognome": "Bianchi", "numero_maglia": "9", "ruolo": "Banda" },
+  "10":{ "id": "10", "nome": "Irene", "cognome": "Bianchi", "numero_maglia": "10", "ruolo": "Opposto" },
+  "11":{ "id": "11", "nome": "Veronica", "cognome": "Bianchi","numero_maglia": "11",  "ruolo": "Opposto" },
+  "12":{ "id": "12", "nome": "Liz", "cognome": "Bianchi", "numero_maglia": "12", "ruolo": "Centrale" },
+  "13":{ "id": "13", "nome": "Mia", "cognome": "Bianchi", "numero_maglia": "13", "ruolo": "Centrale" },
+  "14":{ "id": "14", "nome": "Anna", "cognome": "Bianchi", "numero_maglia": "14", "ruolo": "Centrale" }
+},
+"rpe":{
+  "0":{ "id": "0", "valore": 0, "descrizione": "Assente" },
+  "1":{ "id": "1", "valore": 1, "descrizione": "Riposo attivo" },
+  "2":{ "id": "2", "valore": 2, "descrizione": "Molto facile" },
+  "3":{ "id": "3", "valore": 3, "descrizione": "Facile" },
+  "4":{ "id": "4", "valore": 4, "descrizione": "Moderato" },
+  "5":{ "id": "5", "valore": 5, "descrizione": "Un po' faticoso" },
+  "6":{ "id": "6", "valore": 6, "descrizione": "Faticoso" },
+  "7":{ "id": "7", "valore": 7, "descrizione": "Molto faticoso" },
+  "8":{ "id": "8", "valore": 8, "descrizione": "Duro" },
+  "9":{ "id": "9", "valore": 9, "descrizione": "Quasi massimo" },
+  "10":{ "id": "10", "valore": 10, "descrizione": "Massimo sforzo" }
+}
+}
