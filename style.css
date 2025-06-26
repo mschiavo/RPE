@@ -81,3 +81,39 @@ caption {
         padding: 0.5rem 0.7rem;
     }
 }
+
+#atleteContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+#atleteContainer > div {
+    background-color: #ffffff;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+}
+
+#atleteContainer > div:hover {
+    transform: translateY(-4px);
+}
+
+#atleteContainer h3 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #111827;
+}
+
+#atleteContainer select,
+#atleteContainer input {
+    margin-bottom: 0.5rem;
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}

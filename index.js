@@ -23,7 +23,7 @@ function renderAtlete() {
     atlete.forEach(a => {
         const div = document.createElement("div");
         div.innerHTML = `
-      <h3>${a.nome} ${a.cognome}</h3>
+      <h3>(${a.numero_maglia}) - ${a.nome} ${a.cognome}</h3>
       <select id="rpe-${a.id}">
         ${rpeList.map(r => `<option value="${r.id}">${r.valore} – ${r.descrizione}</option>`).join("")}
       </select>
