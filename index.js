@@ -72,8 +72,7 @@ function renderAtlete() {
             btn.classList.add("selected");
         });
     });
-
-    document.getElementById("salvaDatiBtn").addEventListener("click", salvaDati);
+    
 }
 
 
