@@ -317,3 +317,23 @@ a.btn-link:hover {
 .form-row input {
     flex: 1;
 }
+
+.subrow.hidden {
+    display: none;
+}
+
+.dettagli-atleta {
+    list-style: none;
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+}
+.dettagli-atleta li {
+    padding: 0.2rem 0;
+    font-size: 0.9rem;
+}
+.expandable {
+    cursor: pointer;
+}
+.expandable:hover {
+    background-color: #f0f9ff;
+}

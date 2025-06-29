@@ -77,8 +77,59 @@ function creaTabellaMedia(dati, titolo, atlete) {
 }
 
 function creaTabellaPerAtleta(dati, titolo, atlete) {
-    return creaTabella(dati, titolo, atlete);
+    const grouped = {};
+    dati.forEach(r => {
+        if (!grouped[r.atleta_id]) grouped[r.atleta_id] = [];
+        grouped[r.atleta_id].push(r);
+    });
+
+    const table = document.createElement("table");
+    table.innerHTML = `<caption>${titolo}</caption>
+    <thead><tr><th>Atleta</th><th>RPE medio</th><th></th></tr></thead>`;
+    const tbody = document.createElement("tbody");
+
+    Object.entries(grouped).forEach(([id, arr], i) => {
+        const atleta = atlete.find(a => a.id === id);
+        if (!atleta) return;
+        const mediaRpe = media(arr.map(r => +r.rpe_id)).toFixed(2);
+        const atletaLabel = `#${atleta.numero_maglia} - ${atleta.nome} ${atleta.cognome}`;
+        const subId = `sub-${id}-${i}`;
+
+        // Riga principale
+        tbody.innerHTML += `
+      <tr class="expandable" data-target="${subId}">
+        <td>${atletaLabel}</td>
+        <td>${mediaRpe}</td>
+        <td style="text-align: right;">▶️</td>
+      </tr>
+      <tr id="${subId}" class="subrow hidden">
+        <td colspan="3">
+          <ul class="dettagli-atleta">
+            ${arr.map(r => `<li>${r.data}: RPE ${r.rpe_id}</li>`).join("")}
+          </ul>
+        </td>
+      </tr>
+    `;
+    });
+
+    table.appendChild(tbody);
+
+    // Gestione toggle espansione
+    setTimeout(() => {
+        table.querySelectorAll(".expandable").forEach(row => {
+            row.addEventListener("click", () => {
+                const targetId = row.dataset.target;
+                const subrow = document.getElementById(targetId);
+                const open = !subrow.classList.contains("hidden");
+                subrow.classList.toggle("hidden", open);
+                row.querySelector("td:last-child").textContent = open ? "▶️" : "🔽";
+            });
+        });
+    }, 100);
+
+    return table;
 }
+
 
 function creaTabellaPerRuolo(dati, titolo, atlete) {
     const grouped = {};
