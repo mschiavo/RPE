@@ -1,4 +1,5 @@
 const BASE_URL = "https://rpe-app-49320-default-rtdb.europe-west1.firebasedatabase.app/";
+const parseDate = d => new Date(d + "T00:00:00");
 
 document.addEventListener("DOMContentLoaded", async () => {
     showLoader(true);
@@ -21,7 +22,7 @@ function renderStatistiche(atlete, rpe_data) {
     const oggi = new Date();
     const settimanaFa = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - 6); // inclusi oggi + 6 giorni precedenti
     const meseFa = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - 29); // inclusi oggi + 29 giorni precedenti
-    const parseDate = d => new Date(d + "T00:00:00");
+    // const parseDate = d => new Date(d + "T00:00:00");
 
     const ultimaData = rpe_data
         .map(r => r.data)
