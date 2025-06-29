@@ -23,8 +23,10 @@ function renderStatistiche(atlete, rpe_data) {
     const meseFa = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - 29); // inclusi oggi + 29 giorni precedenti
     const parseDate = d => new Date(d + "T00:00:00");
 
-    const ultimeDate = [...new Set(rpe_data.map(r => r.data))].sort().reverse();
-    const ultimaData = ultimeDate[0];
+    const ultimaData = rpe_data
+        .map(r => r.data)
+        .filter(Boolean)
+        .sort((a, b) => parseDate(b) - parseDate(a))[0];
     const datiUltimo = rpe_data.filter(r => r.data === ultimaData);
     const datiSettimana = rpe_data.filter(r => parseDate(r.data) >= settimanaFa);
     const datiMese = rpe_data.filter(r => parseDate(r.data) >= meseFa);
@@ -97,21 +99,26 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
         const atletaLabel = `#${atleta.numero_maglia} - ${atleta.nome} ${atleta.cognome}`;
         const subId = `sub-${id}-${i}`;
 
-        // Riga principale
+        // ordina e prendi i più recenti
+        const ultimiVoti = arr
+            .slice()
+            .sort((a, b) => parseDate(b.data) - parseDate(a.data))
+            .slice(0, 10);
+
         tbody.innerHTML += `
-      <tr class="expandable" data-target="${subId}">
-        <td>${atletaLabel}</td>
-        <td>${mediaRpe}</td>
-        <td style="text-align: right;">▶️</td>
-      </tr>
-      <tr id="${subId}" class="subrow hidden">
-        <td colspan="3">
-          <ul class="dettagli-atleta">
-            ${arr.map(r => `<li>${r.data}: RPE ${r.rpe_id}</li>`).join("")}
-          </ul>
-        </td>
-      </tr>
-    `;
+          <tr class="expandable" data-target="${subId}">
+            <td>${atletaLabel}</td>
+            <td>${mediaRpe}</td>
+            <td style="text-align: right;">▶️</td>
+          </tr>
+          <tr id="${subId}" class="subrow hidden">
+            <td colspan="3">
+              <ul class="dettagli-atleta">
+                ${ultimiVoti.map(r => `<li>${r.data}: RPE ${r.rpe_id}</li>`).join("")}
+              </ul>
+            </td>
+          </tr>
+        `;
     });
 
     table.appendChild(tbody);
