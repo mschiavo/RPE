@@ -8,13 +8,14 @@
 </head>
 <body>
 <header>Inserimento RPE</header>
-<a href="statistiche.html">Statistiche →</a>
+<a href="statistiche.html" class="link-navigazione">Statistiche</a>
 
-<div class="mb-4">
+<div class="form-row">
     <label for="dataAllenamento">Data</label>
     <input type="date" id="dataAllenamento"/>
 </div>
-<div class="mb-4">
+
+<div class="form-row">
     <label for="durataGenerale">Durata generale (min)</label>
     <input type="number" id="durataGenerale"/>
 </div>
@@ -22,11 +23,10 @@
 <div id="atleteContainer" class="mb-4"></div>
 <button onclick="salvaDati()">Salva Dati</button>
 
-<!-- <div id="loader" style="display:none;">⏳ Caricamento...</div> -->
-
 <script src="index.js"></script>
 <div id="overlay-loader" class="hidden">
-    <div class="loader-spinner"></div> Caricamento...
+    <div class="loader-spinner"></div>
+    Caricamento...
 </div>
 
 </body>
