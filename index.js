@@ -75,7 +75,6 @@ function renderAtlete() {
 
 }
 
-
 async function salvaDati() {
     const data = document.getElementById("dataAllenamento").value;
     const durataGen = document.getElementById("durataGenerale").value;
@@ -99,31 +98,36 @@ async function salvaDati() {
         });
     }
 
-    for (let a of atlete) {
-        const nuoviRPE = atlete.map(a => {
-            const durataSpecifica = document.getElementById(`durata-${a.id}`).value;
-            const selectedBtn = document.querySelector(`.rpe-btn.selected[data-atleta="${a.id}"]`);
-            const rpe_id = selectedBtn ? selectedBtn.dataset.rpe : null;
+    const nuoviRPE = atlete.map(a => {
+        const durataSpecifica = document.getElementById(`durata-${a.id}`).value;
+        const selectedBtn = document.querySelector(`.rpe-btn.selected[data-atleta="${a.id}"]`);
+        const rpe_id = selectedBtn ? selectedBtn.dataset.rpe : null;
 
-            return {
-                atleta_id: a.id,
-                rpe_id,
-                durata: durataSpecifica || durataGen,
-                data,
-                allenamento_id
-            };
-        });
-    }
+        return {
+            atleta_id: a.id,
+            rpe_id,
+            durata: durataSpecifica || durataGen,
+            data,
+            allenamento_id
+        };
+    });
 
+    // ⚠️ controllo se manca qualche voto
     if (nuoviRPE.some(r => !r.rpe_id)) {
         alert("Seleziona un RPE per ogni atleta");
         showLoader(false);
         return;
     }
 
+    // ✅ Salvo su Firebase
+    for (const r of nuoviRPE) {
+        await pushData("rpe_data", r);
+    }
+
     showLoader(false);
     alert("Dati salvati!");
 }
+
 
 async function pushData(path, obj) {
     await fetch(`${BASE_URL}/${path}.json`, {
