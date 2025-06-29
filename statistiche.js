@@ -19,15 +19,17 @@ async function fetchData(path) {
 function renderStatistiche(atlete, rpe_data) {
     const container = document.getElementById("tabelle");
     const oggi = new Date();
-    const settimanaFa = new Date(oggi); settimanaFa.setDate(oggi.getDate() - 7);
-    const meseFa = new Date(oggi); meseFa.setDate(oggi.getDate() - 30);
-    const parseData = d => new Date(d + "T00:00:00");
+    const settimanaFa = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - 6); // inclusi oggi + 6 giorni precedenti
+    const meseFa = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - 29); // inclusi oggi + 29 giorni precedenti
+    const parseDate = d => new Date(d + "T00:00:00");
 
     const ultimeDate = [...new Set(rpe_data.map(r => r.data))].sort().reverse();
     const ultimaData = ultimeDate[0];
     const datiUltimo = rpe_data.filter(r => r.data === ultimaData);
-    const datiSettimana = rpe_data.filter(r => parseData(r.data) >= settimanaFa);
-    const datiMese = rpe_data.filter(r => parseData(r.data) >= meseFa);
+    const datiSettimana = rpe_data.filter(r => parseDate(r.data) >= settimanaFa);
+    const datiMese = rpe_data.filter(r => parseDate(r.data) >= meseFa);
+
+    console.log("Settimana dal:", settimanaFa.toISOString().split("T")[0]);
 
     container.appendChild(creaTabella(datiUltimo, "Voti dell'ultimo allenamento", atlete));
     container.appendChild(creaTabellaMedia(datiSettimana, "Media ultima settimana", atlete));
