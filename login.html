@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Login RPE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main style="max-width:480px;margin:2rem auto;">
+  <h1>Login</h1>
+  <form id="loginForm">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Accedi</button>
+    <p id="error" style="color:red;"></p>
+  </form>
+</main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "TUO_API_KEY",
+    authDomain: "TUO_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://TUO_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "TUO_PROJECT_ID",
+    storageBucket: "TUO_PROJECT_ID.appspot.com",
+    messagingSenderId: "TUO_SENDER_ID",
+    appId: "TUO_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const loginForm = document.getElementById('loginForm');
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+
+    try {
+      const userRef = ref(db, `utenza/${username}`);
+      const snapshot = await get(userRef);
+      if (!snapshot.exists()) {
+        document.getElementById('error').textContent = 'Utente non trovato';
+        return;
+      }
+      const user = snapshot.val();
+      if (user.password !== password) {
+        document.getElementById('error').textContent = 'Password errata';
+        return;
+      }
+
+      // Salva info utente in localStorage
+      const loggedUser = {
+        username: user.username,
+        ruolo: user.profilo === 1 ? 'admin' : 'athlete',
+        atletaId: user.atletaId
+      };
+      localStorage.setItem('rpe_user', JSON.stringify(loggedUser));
+
+      // Reindirizza a index
+      window.location.href = 'index.html';
+    } catch (err) {
+      document.getElementById('error').textContent = 'Errore: ' + err.message;
+    }
+  });
+</script>
+</body>
+</html>
