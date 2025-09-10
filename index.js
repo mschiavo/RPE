@@ -14,10 +14,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     showLoader(false);
 });
 
-// Mostra informazioni utente e logout
+const logged = JSON.parse(localStorage.getItem('rpe_user'));
+if (!logged) {
+    window.location.href = 'login.html';
+}
+
+// mostra info utente e logout
 document.addEventListener('DOMContentLoaded', () => {
     const userWelcome = document.getElementById('user-welcome');
     const logoutBtn = document.getElementById('logoutBtn');
+
     if (userWelcome) userWelcome.textContent = `Connesso: ${logged.username} (${logged.ruolo})`;
     if (logoutBtn) {
         logoutBtn.style.display = 'inline-block';
@@ -207,3 +213,31 @@ function showLoader(show) {
     loader.classList.toggle("hidden", !show);
 }
 
+function setupRpeForm(atlete) {
+    const select = document.getElementById('atletaSelect');
+    select.innerHTML = '';
+    if (logged.ruolo === 'admin') {
+        atlete.forEach(a => {
+            const opt = document.createElement('option');
+            opt.value = a.id;
+            opt.textContent = `${a.nome} ${a.cognome}`;
+            select.appendChild(opt);
+        });
+        select.disabled = false;
+    } else if (logged.ruolo === 'athlete') {
+        const my = atlete.find(a => a.id === logged.atletaId);
+        const opt = document.createElement('option');
+        opt.value = logged.atletaId;
+        opt.textContent = `${my.nome} ${my.cognome}`;
+        select.appendChild(opt);
+        select.disabled = true;
+    }
+}
+
+async function submitRpe(formData) {
+    if (logged.ruolo === 'athlete') formData.atletaId = logged.atletaId;
+
+    // usa pushData come nel progetto originale
+    await pushData('rpe', formData);
+    alert('RPE salvata!');
+}
