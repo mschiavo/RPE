@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 const logged = JSON.parse(localStorage.getItem('rpe_user'));
+console.log(JSON.parse(localStorage.getItem('rpe_user')));
 if (!logged) {
     window.location.href = 'login.html';
 }
