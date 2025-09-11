@@ -1,7 +1,4 @@
 // login.js
-import { fetchData } from './utils.js'; // usa le stesse funzioni del progetto
-// import db se serve per pushData (non necessario per login in lettura)
-
 const loginForm = document.getElementById('loginForm');
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -18,17 +15,14 @@ loginForm.addEventListener('submit', async (e) => {
         // trova l'utente per username
         const userEntry = Object.values(utenti).find(u => u.username === username);
         if (!userEntry) {
-            errorEl.textContent = 'Utente non trovato';
-            return;
-        }
-
-        if (userEntry.password !== password) {
-            errorEl.textContent = 'Password errata';
-            return;
+            if (userEntry.password !== password) {
+                errorEl.textContent = 'username o password errati';
+                return;
+            }
         }
 
         // determina ruolo
-        const ruolo = userEntry.profilo === 1 ? 'admin' : 'athlete';
+        const ruolo = userEntry.profilo === 1 ? 'admin' : 'atleta';
         const atletaId = userEntry.atletaId;
 
         // salva info in localStorage nello stesso formato del progetto
