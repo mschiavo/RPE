@@ -1,5 +1,7 @@
 // login.js
+const BASE_URL = "https://rpe-app-49320-default-rtdb.europe-west1.firebasedatabase.app/";
 const loginForm = document.getElementById('loginForm');
+
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
