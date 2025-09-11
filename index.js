@@ -15,14 +15,26 @@ const logged = JSON.parse(localStorage.getItem('rpe_user'));
 console.log(JSON.parse(localStorage.getItem('rpe_user')));
 if (!logged) {
     window.location.href = 'login.html';
+} else {
+    const now = Date.now();
+    const maxSession = 20 * 60 * 1000; // 20 minuti in ms
+
+    if ((now - logged.timestamp) > maxSession) {
+        // sessione scaduta
+        localStorage.removeItem('rpe_user');
+        alert('Sessione scaduta, effettua di nuovo il login.');
+        window.location.href = 'login.html';
+    }
 }
 
 // mostra info utente e logout
 document.addEventListener('DOMContentLoaded', () => {
-    const userWelcome = document.getElementById('user-welcome');
-    const logoutBtn = document.getElementById('logoutBtn');
+    const userSpan = document.getElementById('username-display');
+    if (userSpan) {
+        userSpan.textContent = logged.username;
+    }
 
-    if (userWelcome) userWelcome.textContent = `Connesso: ${logged.username} (${logged.ruolo})`;
+    const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.style.display = 'inline-block';
         logoutBtn.addEventListener('click', () => {

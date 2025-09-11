@@ -28,7 +28,9 @@ loginForm.addEventListener('submit', async (e) => {
         const atletaId = userEntry.atletaId;
 
         // salva info in localStorage nello stesso formato del progetto
-        localStorage.setItem('rpe_user', JSON.stringify({ username, ruolo, atletaId }));
+
+        const now = Date.now(); // millisecondi
+        localStorage.setItem('rpe_user', JSON.stringify({ username, ruolo, atletaId, timestamp:now}));
         console.log(JSON.parse(localStorage.getItem('rpe_user')));
 
         // redirect alla home
