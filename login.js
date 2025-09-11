@@ -35,3 +35,11 @@ loginForm.addEventListener('submit', async (e) => {
         errorEl.textContent = 'Errore: ' + err.message;
     }
 });
+
+async function fetchData(path) {
+    const res = await fetch(`${BASE_URL}/${path}.json`);
+    const data = await res.json();
+    return Object.entries(data || {})
+        .filter(([_, val]) => val !== null && typeof val === "object")
+        .map(([id, val]) => ({ ...val, id }));
+}
