@@ -7,24 +7,26 @@
     <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-<header>Inserimento RPE
-    <span id="username-display" />
-    <button id="logoutBtn" style="display:none;">Logout</button>-->
+<header>
+    <span>Inserimento RPE - ( </span>
+    <span id="username-display" ></span>
+    <span>)</span>
+    <button id="logoutBtn" style="display:none;">Logout</button>
 </header>
 <div id="user-info">
 <!--    Utente: <span id="username-display"></span>-->
 <!--    <button id="logoutBtn" style="display:none;">Logout</button>-->
 </div>
-<a href="statistiche.html" class="link-navigazione">Statistiche</a>
+<a id="statisticheBtn" href="statistiche.html" class="link-navigazione">Statistiche</a>
 
 <div class="form-row">
     <label for="dataAllenamento">Data</label>
     <input type="date" id="dataAllenamento"/>
 </div>
 
-<div class="form-row">
-    <label for="durataGenerale">Durata generale (min)</label>
-    <input type="number" id="durataGenerale"/>
+<div class="form-row" >
+    <label for="durataGenerale" hidden>Durata generale (min)</label>
+    <input type="number" id="durataGenerale" value="120" readonly hidden/>
 </div>
 
 <div id="atleteContainer" class="mb-4"></div>

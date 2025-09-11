@@ -24,13 +24,13 @@ loginForm.addEventListener('submit', async (e) => {
         }
 
         // determina ruolo
-        const ruolo = userEntry.profilo === 1 ? 'admin' : 'atleta';
+        const profilo = userEntry.profilo;
         const atletaId = userEntry.atletaId;
 
         // salva info in localStorage nello stesso formato del progetto
 
         const now = Date.now(); // millisecondi
-        localStorage.setItem('rpe_user', JSON.stringify({ username, ruolo, atletaId, timestamp:now}));
+        localStorage.setItem('rpe_user', JSON.stringify({ username, profilo, atletaId, timestamp:now}));
         console.log(JSON.parse(localStorage.getItem('rpe_user')));
 
         // redirect alla home
