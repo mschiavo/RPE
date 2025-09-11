@@ -29,6 +29,7 @@ loginForm.addEventListener('submit', async (e) => {
 
         // salva info in localStorage nello stesso formato del progetto
         localStorage.setItem('rpe_user', JSON.stringify({ username, ruolo, atletaId }));
+        console.log(JSON.parse(localStorage.getItem('rpe_user')));
 
         // redirect alla home
         window.location.href = 'index.html';

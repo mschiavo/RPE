@@ -3,9 +3,6 @@ const BASE_URL = "https://rpe-app-49320-default-rtdb.europe-west1.firebasedataba
 let atlete = [];
 let rpeList = [];
 
-const logged = JSON.parse(localStorage.getItem('rpe_user'));
-if (!logged) window.location.href = 'login.html';
-
 document.addEventListener("DOMContentLoaded", async () => {
     showLoader(true);
     atlete = await fetchData("atlete");
@@ -42,23 +39,6 @@ async function fetchData(path) {
         .map(([id, val]) => ({ ...val, id }));
 }
 
-/*
-function renderAtlete() {
-    const container = document.getElementById("atleteContainer");
-    container.innerHTML = "";
-    atlete.forEach(a => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-      <h3>(${a.numero_maglia}) - ${a.nome} ${a.cognome}</h3>
-      <select id="rpe-${a.id}">
-        ${rpeList.map(r => `<option value="${r.id}">${r.valore} – ${r.descrizione}</option>`).join("")}
-      </select>
-      <input id="durata-${a.id}" type="number" placeholder="Durata (opzionale)" />
-    `;
-        container.appendChild(div);
-    });
-}
-*/
 
 function renderAtleteList(atlete) {
     const container = document.getElementById('atlete-list');
