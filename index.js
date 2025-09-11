@@ -1,5 +1,6 @@
 const BASE_URL = "https://rpe-app-49320-default-rtdb.europe-west1.firebasedatabase.app/";
 
+let userLoggedIn = null;
 let atlete = [];
 let atleteDaMostrare = [];
 let rpeList = [];
@@ -8,6 +9,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     showLoader(true);
     atlete = await fetchData("atlete");
     rpeList = await fetchData("rpe");
+
+    const userSpan = document.getElementById('username-display');
+    if (userSpan) {
+        if (logged.profilo === 1) {
+            userSpan.textContent = "Admin";
+        }
+        else
+        {
+            atleteDaMostrare = atlete.filter(a => a.id == logged.atletaId);
+            if (atleteDaMostrare.length > 0)
+                userSpan.textContent = atleteDaMostrare[0].nome + " " + atleteDaMostrare[0].cognome;
+            else
+                userSpan.textContent = "";
+        }
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.style.display = 'inline-block';
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('rpe_user');
+            window.location.href = 'login.html';
+        });
+    }
+
     renderAtlete();
     showLoader(false);
 });
@@ -32,21 +58,9 @@ if (!logged) {
 }
 
 // mostra info utente e logout
-document.addEventListener('DOMContentLoaded', () => {
-    const userSpan = document.getElementById('username-display');
-    if (userSpan) {
-        userSpan.textContent = logged.username;
-    }
-
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.style.display = 'inline-block';
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('rpe_user');
-            window.location.href = 'login.html';
-        });
-    }
-});
+// document.addEventListener('DOMContentLoaded', () => {
+//
+// });
 
 async function fetchData(path) {
     const res = await fetch(`${BASE_URL}/${path}.json`);
@@ -132,7 +146,7 @@ function renderAtlete() {
         div.innerHTML = `
       <h3>${a.nome} ${a.cognome}</h3>
       <div class="rpe-grid">${rpeButtons}</div>
-      <input id="durata-${a.id}" type="number" placeholder="Durata (opzionale)" />
+      <input id="durata-${a.id}" type="number" placeholder="Durata (opzionale)" hidden />
     `;
 
         container.appendChild(div);
