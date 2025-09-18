@@ -118,7 +118,12 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
           <tr id="${subId}" class="subrow hidden">
             <td colspan="3">
               <ul class="dettagli-atleta">
-                ${ultimiVoti.map(r => `<li>${r.data}: RPE ${r.rpe_id}</li>`).join("")}
+                ${ultimiVoti.map(r => `
+                  <li>
+                    <span>${r.data}: RPE ${r.rpe_id}</span>
+                    <button class="delete-btn" data-rpe-id="${r.id}" title="Elimina questo voto">🗑️</button>
+                  </li>
+                `).join("")}
               </ul>
             </td>
           </tr>
@@ -127,8 +132,9 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
 
     table.appendChild(tbody);
 
-    // Gestione toggle espansione
+    // Gestione toggle espansione e CANCELLAZIONE
     setTimeout(() => {
+        // Listener per espandere/collassare le righe
         table.querySelectorAll(".expandable").forEach(row => {
             row.addEventListener("click", () => {
                 const targetId = row.dataset.target;
@@ -138,11 +144,54 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
                 row.querySelector("td:last-child").textContent = open ? "▶️" : "🔽";
             });
         });
+
+        // Listener per i pulsanti di cancellazione
+        table.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.addEventListener('click', (event) => {
+                // Impedisce che il click sul bottone attivi anche l'espansione della riga
+                event.stopPropagation();
+                const rpeDbId = btn.dataset.rpeId;
+                eliminaVoto(rpeDbId);
+            });
+        });
     }, 100);
 
     return table;
 }
 
+/**
+ * Elimina una specifica registrazione RPE dal database.
+ * @param {string} rpeDbId - L'ID univoco del record RPE da eliminare.
+ */
+async function eliminaVoto(rpeDbId) {
+    if (!rpeDbId) return;
+
+    // Chiediamo conferma per evitare cancellazioni accidentali
+    const confermato = confirm("Sei sicuro di voler eliminare definitivamente questo voto?");
+    if (!confermato) {
+        return;
+    }
+
+    showLoader(true);
+    try {
+        const res = await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, {
+            method: 'DELETE'
+        });
+
+        if (!res.ok) {
+            throw new Error("La richiesta di eliminazione è fallita.");
+        }
+
+        alert("Voto eliminato con successo!");
+        location.reload(); // Ricarichiamo la pagina per vedere i dati aggiornati
+
+    } catch (error) {
+        console.error("Errore durante l'eliminazione del voto:", error);
+        alert("Si è verificato un errore durante l'eliminazione.");
+    } finally {
+        showLoader(false);
+    }
+}
 
 function creaTabellaPerRuolo(dati, titolo, atlete) {
     const grouped = {};
