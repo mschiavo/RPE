@@ -199,8 +199,8 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
 async function eliminaVoto(rpeDbId) {
     if (!rpeDbId) return;
 
-    // Chiediamo conferma per evitare cancellazioni accidentali
-    const confermato = confirm("Sei sicuro di voler eliminare definitivamente questo voto?");
+    // Usiamo il nuovo modale di conferma
+    const confermato = await showConfirm("Sei sicuro di voler eliminare definitivamente questo voto?");
     if (!confermato) {
         return;
     }
