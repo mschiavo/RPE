@@ -3,12 +3,13 @@ const parseDate = d => new Date(d + "T00:00:00");
 
 document.addEventListener("DOMContentLoaded", async () => {
     showLoader(true);
-    const [atlete, rpe_data] = await Promise.all([
+    const [atlete, rpe_data, rpeList] = await Promise.all([
         fetchData("atlete"),
-        fetchData("rpe_data")
+        fetchData("rpe_data"),
+        fetchData("rpe")
     ]);
     showLoader(false);
-    renderStatistiche(atlete, rpe_data);
+    renderStatistiche(atlete, rpe_data, rpeList);
 });
 
 async function fetchData(path) {
@@ -17,7 +18,7 @@ async function fetchData(path) {
     return Object.entries(data || {}).map(([id, val]) => ({...val, id}));
 }
 
-function renderStatistiche(atlete, rpe_data) {
+function renderStatistiche(atlete, rpe_data, rpeList) {
     const container = document.getElementById("tabelle");
     const oggi = new Date();
     const settimanaFa = new Date(oggi.getFullYear(), oggi.getMonth(), oggi.getDate() - 6); // inclusi oggi + 6 giorni precedenti
@@ -34,6 +35,8 @@ function renderStatistiche(atlete, rpe_data) {
 
     console.log("Settimana dal:", settimanaFa.toISOString().split("T")[0]);
 
+    const datiUltimiVoti = elaboraUltimiVoti(atlete, rpe_data);
+    container.appendChild(creaTabellaUltimiVoti(datiUltimiVoti, "Ultimi Voti Inseriti", rpeList));
     container.appendChild(creaTabella(datiUltimo, "Voti dell'ultimo allenamento", atlete));
     container.appendChild(creaTabellaMedia(datiSettimana, "Media ultima settimana", atlete));
     container.appendChild(creaTabellaMedia(datiMese, "Media ultimo mese", atlete));
@@ -165,6 +168,78 @@ function creaTabellaPerRuolo(dati, titolo, atlete) {
     table.appendChild(tbody);
     return table;
 }
+
+/**
+ * Trova l'ultimo inserimento RPE per ogni atleta basandosi sul timestamp.
+ */
+function elaboraUltimiVoti(atlete, rpeData) {
+    const ultimiVotiMap = new Map();
+
+    for (const rpeEntry of rpeData) {
+        // Se l'entry non ha un timestamp (dati vecchi), la saltiamo
+        if (!rpeEntry.timestamp_inserimento) continue;
+
+        // Se non ho ancora un voto per questa atleta, o se quello che ho trovato è più vecchio, lo aggiorno.
+        if (!ultimiVotiMap.has(rpeEntry.atleta_id) || rpeEntry.timestamp_inserimento > ultimiVotiMap.get(rpeEntry.atleta_id).timestamp_inserimento) {
+            ultimiVotiMap.set(rpeEntry.atleta_id, rpeEntry);
+        }
+    }
+
+    // Combino i dati delle atlete con il loro ultimo voto trovato
+    return atlete.map(atleta => {
+        const ultimoVoto = ultimiVotiMap.get(atleta.id);
+        return {
+            nomeCompleto: `${atleta.nome} ${atleta.cognome}`,
+            rpe_id: ultimoVoto ? ultimoVoto.rpe_id : null,
+            data_allenamento: ultimoVoto ? ultimoVoto.data : "N/D",
+            timestamp_inserimento: ultimoVoto ? ultimoVoto.timestamp_inserimento : null
+        };
+    });
+}
+
+
+/**
+ * Crea e restituisce l'elemento <table> per la visualizzazione degli ultimi voti inseriti.
+ */
+function creaTabellaUltimiVoti(datiTabella, titolo, rpeList) {
+    const table = document.createElement("table");
+    table.innerHTML = `
+        <caption>${titolo}</caption>
+        <thead>
+            <tr>
+                <th>Atleta</th>
+                <th>Ultimo Voto (RPE)</th>
+                <th>Data Allenamento</th>
+                <th>Data Inserimento Voto</th>
+            </tr>
+        </thead>`;
+    const tbody = document.createElement("tbody");
+
+    // Ordino per nome per una visualizzazione più pulita
+    datiTabella.sort((a, b) => a.nomeCompleto.localeCompare(b.nomeCompleto));
+
+    datiTabella.forEach(item => {
+        const rpeInfo = item.rpe_id ? rpeList.find(r => r.id === item.rpe_id) : null;
+        const rpeValore = rpeInfo ? rpeInfo.valore : "N/D";
+
+        const dataInserimento = item.timestamp_inserimento
+            ? new Date(item.timestamp_inserimento).toLocaleString('it-IT')
+            : "N/D";
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.nomeCompleto}</td>
+                <td>${rpeValore}</td>
+                <td>${item.data_allenamento}</td>
+                <td>${dataInserimento}</td>
+            </tr>
+        `;
+    });
+
+    table.appendChild(tbody);
+    return table;
+}
+
 
 function media(arr) {
     return arr.length ? arr.reduce((a, b) => a + b) / arr.length : 0;
