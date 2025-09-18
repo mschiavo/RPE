@@ -37,7 +37,7 @@ function renderStatistiche(atlete, rpe_data, rpeList) {
 
     const datiUltimiVoti = elaboraUltimiVoti(atlete, rpe_data);
     container.appendChild(creaTabellaUltimiVoti(datiUltimiVoti, "Ultimi Voti Inseriti", rpeList));
-    container.appendChild(creaTabella(datiUltimo, "Voti dell'ultimo allenamento", atlete));
+    container.appendChild(creaTabella(datiUltimo, "Voti ultimo allenamento", atlete));
     container.appendChild(creaTabellaMedia(datiSettimana, "Media ultima settimana", atlete));
     container.appendChild(creaTabellaMedia(datiMese, "Media ultimo mese", atlete));
     container.appendChild(creaTabellaPerAtleta(rpe_data, "Tutti i voti per atleta", atlete));
