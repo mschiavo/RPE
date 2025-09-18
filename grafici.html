@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafici - RPE App</title>
+
+    <!-- Stili globali -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="grafici.css">
+
+</head>
+<body>
+<header>Grafici</header>
+
+<div id="user-info">
+</div>
+
+<nav>
+    <a href="index.html" class="link-navigazione">Inserimento RPE</a>
+    <a href="statistiche.html" class="link-navigazione">Statistiche</a>
+    <!--    <a href="gestione-atlete.html">Gestione Atlete</a>-->
+<!--    <a href="grafici.html" class="link-navigazione">Grafici</a>-->
+</nav>
+
+<main>
+    <h2>Andamento RPE Medio per Allenamento</h2>
+    <div id="chart-container">
+        <!-- Il grafico verrà disegnato qui da Chart.js -->
+        <canvas id="rpeTrendChart"></canvas>
+    </div>
+</main>
+
+<!-- Loader (lo stesso delle altre pagine) -->
+<div id="overlay-loader" class="hidden">
+    <div class="loader-spinner"></div>
+    <span>Caricamento dati...</span>
+</div>
+
+<!-- Includiamo la libreria Chart.js da un CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Il nostro script per creare il grafico -->
+<script src="grafici.js"></script>
+</body>
+</html>

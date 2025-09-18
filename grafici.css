@@ -1,0 +1,10 @@
+/* Stili per la pagina dei grafici */
+
+#chart-container {
+    /* Imposta un'altezza minima per evitare che il grafico collassi durante il caricamento */
+    min-height: 450px;
+    padding: 1rem;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
