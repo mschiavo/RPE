@@ -42,6 +42,23 @@ function renderStatistiche(atlete, rpe_data, rpeList) {
     container.appendChild(creaTabellaMedia(datiMese, "Media ultimo mese", atlete));
     container.appendChild(creaTabellaPerAtleta(rpe_data, "Tutti i voti per atleta", atlete));
     container.appendChild(creaTabellaPerRuolo(rpe_data, "Media per ruolo", atlete));
+
+    // --- NUOVA LOGICA PER RENDERE LE TABELLE COLLASSABILI ---
+    // Aggiungiamo questo blocco alla fine della funzione
+    container.querySelectorAll(".expandable-caption").forEach(caption => {
+        caption.style.cursor = 'pointer'; // Rende visivamente chiaro che è cliccabile
+        caption.addEventListener('click', () => {
+            const targetId = caption.dataset.target;
+            const tbody = document.getElementById(targetId);
+            const arrow = caption.querySelector('.toggle-arrow');
+
+            if (tbody && arrow) {
+                const isHidden = tbody.classList.toggle('hidden');
+                arrow.textContent = isHidden ? '▶️' : '🔽';
+            }
+        });
+    });
+
 }
 
 function creaTabella(dati, titolo, atlete) {
@@ -253,7 +270,7 @@ function elaboraUltimiVoti(atlete, rpeData) {
 function creaTabellaUltimiVoti(datiTabella, titolo, rpeList) {
     const table = document.createElement("table");
     const tbodyId = `tbody-ultimi-voti`; // ID univoco per il corpo della tabella
-    
+
     table.innerHTML = `
         <caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
