@@ -253,7 +253,10 @@ function elaboraUltimiVoti(atlete, rpeData) {
 function creaTabellaUltimiVoti(datiTabella, titolo, rpeList) {
     const table = document.createElement("table");
     table.innerHTML = `
-        <caption>${titolo}</caption>
+        <caption class="expandable-caption" data-target="${tbodyId}">
+            ${titolo}
+            <span class="toggle-arrow">🔽</span>
+        </caption>
         <thead>
             <tr>
                 <th>Atleta</th>
@@ -263,6 +266,7 @@ function creaTabellaUltimiVoti(datiTabella, titolo, rpeList) {
             </tr>
         </thead>`;
     const tbody = document.createElement("tbody");
+    tbody.id = tbodyId; // Assegniamo l'ID
 
     // Ordino per nome per una visualizzazione più pulita
     datiTabella.sort((a, b) => a.nomeCompleto.localeCompare(b.nomeCompleto));
@@ -270,19 +274,29 @@ function creaTabellaUltimiVoti(datiTabella, titolo, rpeList) {
     datiTabella.forEach(item => {
         const rpeInfo = item.rpe_id ? rpeList.find(r => r.id === item.rpe_id) : null;
         const rpeValore = rpeInfo ? rpeInfo.valore : "N/D";
-
         const dataInserimento = item.timestamp_inserimento
             ? new Date(item.timestamp_inserimento).toLocaleString('it-IT')
             : "N/D";
 
-        tbody.innerHTML += `
-            <tr>
-                <td>${item.nomeCompleto}</td>
-                <td>${rpeValore}</td>
-                <td>${item.data_allenamento}</td>
-                <td>${dataInserimento}</td>
-            </tr>
+        const riga = document.createElement('tr');
+        const cellaAzione = document.createElement('td');
+        if (item.rpe_db_id) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.title = 'Elimina questo voto';
+            deleteBtn.addEventListener('click', () => eliminaVoto(item.rpe_db_id));
+            cellaAzione.appendChild(deleteBtn);
+        }
+
+        riga.innerHTML = `
+            <td>${item.nomeCompleto}</td>
+            <td>${rpeValore}</td>
+            <td>${item.data_allenamento}</td>
+            <td>${dataInserimento}</td>
         `;
+        riga.appendChild(cellaAzione);
+        tbody.appendChild(riga);
     });
 
     table.appendChild(tbody);
