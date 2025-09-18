@@ -32,15 +32,31 @@ function renderStatistiche(atlete, rpe_data, rpeList) {
     const datiUltimo = rpe_data.filter(r => r.data === ultimaData);
     const datiSettimana = rpe_data.filter(r => parseDate(r.data) >= settimanaFa);
     const datiMese = rpe_data.filter(r => parseDate(r.data) >= meseFa);
+    // Definiamo le date di inizio e fine stagione
+    const inizioStagione = new Date('2025-08-01T00:00:00');
+    // Nota: Giugno ha 30 giorni, uso 30/06
+    const fineStagione = new Date('2026-06-30T23:59:59');
+
+    // Calcoliamo il numero di allenamenti unici nella stagione
+    const allenamentiStagione = new Set(
+        rpe_data
+            .map(r => r.data)
+            .filter(d => {
+                if (!d) return false;
+                const dataAllenamento = parseDate(d);
+                return dataAllenamento >= inizioStagione && dataAllenamento <= fineStagione;
+            })
+    );
+    const numeroAllenamentiStagione = allenamentiStagione.size;
 
     console.log("Settimana dal:", settimanaFa.toISOString().split("T")[0]);
 
     const datiUltimiVoti = elaboraUltimiVoti(atlete, rpe_data);
     container.appendChild(creaTabellaUltimiVoti(datiUltimiVoti, "Ultimi Voti Inseriti", rpeList));
     container.appendChild(creaTabella(datiUltimo, "Voti ultimo allenamento", atlete));
+    container.appendChild(creaTabellaPerAtleta(rpe_data, "Tutti i voti per atleta", atlete, numeroAllenamentiStagione));
     container.appendChild(creaTabellaMedia(datiSettimana, "Media ultima settimana", atlete));
     container.appendChild(creaTabellaMedia(datiMese, "Media ultimo mese", atlete));
-    container.appendChild(creaTabellaPerAtleta(rpe_data, "Tutti i voti per atleta", atlete));
     container.appendChild(creaTabellaPerRuolo(rpe_data, "Media per ruolo", atlete));
 
     // --- NUOVA LOGICA PER RENDERE LE TABELLE COLLASSABILI ---
@@ -111,7 +127,7 @@ function creaTabellaMedia(dati, titolo, atlete) {
     return table;
 }
 
-function creaTabellaPerAtleta(dati, titolo, atlete) {
+function creaTabellaPerAtleta(dati, titolo, atlete, numeroAllenamentiTotali) {
     const grouped = {};
     dati.forEach(r => {
         if (!grouped[r.atleta_id]) grouped[r.atleta_id] = [];
@@ -121,11 +137,13 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
     const table = document.createElement("table");
     const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
 
+
+    // 1. Aggiungiamo la nuova colonna "Presenze" nell'intestazione
     table.innerHTML = `<caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
             <span class="toggle-arrow">🔽</span>
         </caption>
-    <thead><tr><th>Atleta</th><th>RPE medio</th><th></th></tr></thead>`;
+    <thead><tr><th>Atleta</th><th>RPE medio</th><th>Presenze</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
     tbody.id = tbodyId;
 
@@ -146,10 +164,11 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
           <tr class="expandable" data-target="${subId}">
             <td>${atletaLabel}</td>
             <td>${mediaRpe}</td>
+            <td>${arr.length} / ${numeroAllenamentiTotali}</td>
             <td style="text-align: right;">▶️</td>
           </tr>
           <tr id="${subId}" class="subrow hidden">
-            <td colspan="3">
+            <td colspan="4">
               <ul class="dettagli-atleta">
                 ${ultimiVoti.map(r => `
                   <li>
