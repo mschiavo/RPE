@@ -252,6 +252,8 @@ function elaboraUltimiVoti(atlete, rpeData) {
  */
 function creaTabellaUltimiVoti(datiTabella, titolo, rpeList) {
     const table = document.createElement("table");
+    const tbodyId = `tbody-ultimi-voti`; // ID univoco per il corpo della tabella
+    
     table.innerHTML = `
         <caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
