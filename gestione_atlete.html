@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Atlete - RPE App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>Gestione Atlete</h1>
+    <nav>
+        <a href="index.html">Inserimento RPE</a>
+        <a href="statistiche.html">Statistiche</a>
+    </nav>
+</header>
+
+<main>
+    <!-- Form per Aggiungere/Modificare Atleta (nascosto di default) -->
+    <div id="form-container" class="hidden">
+        <form id="atleta-form">
+            <h2 id="form-title">Aggiungi Atleta</h2>
+            <input type="hidden" id="atleta-id">
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" required>
+            </div>
+            <div class="form-group">
+                <label for="cognome">Cognome:</label>
+                <input type="text" id="cognome" required>
+            </div>
+            <div class="form-group">
+                <label for="numero_maglia">Numero Maglia:</label>
+                <input type="number" id="numero_maglia" required>
+            </div>
+            <div class="form-group">
+                <label for="ruolo">Ruolo:</label>
+                <input type="text" id="ruolo" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Salva</button>
+                <button type="button" id="btn-cancel" class="btn-cancel">Annulla</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabella per visualizzare le atlete -->
+    <div class="table-container">
+        <button id="btn-add-new" class="btn-add">Aggiungi Nuova Atleta</button>
+        <table>
+            <thead>
+            <tr>
+                <th>Nome Completo</th>
+                <th>N. Maglia</th>
+                <th>Ruolo</th>
+                <th>Azioni</th>
+            </tr>
+            </thead>
+            <tbody id="atlete-table-body">
+            <!-- Le righe verranno popolate da JavaScript -->
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<!-- Loader e Modale (li implementeremo nella Parte 2) -->
+<div id="overlay-loader" class="hidden"></div>
+
+<script src="gestione_atlete.js"></script>
+</body>
+</html>
