@@ -150,7 +150,8 @@ async function salvaDati() {
             rpe_id,
             durata: durataSpecifica || durataGen,
             data,
-            allenamento_id
+            allenamento_id,
+            timestamp_inserimento: Date.now()
         };
     });
 
