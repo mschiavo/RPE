@@ -110,14 +110,14 @@ function creaTabellaMedia(dati, titolo, atlete, startClosed = false) {
 
     table.innerHTML = `<caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
-            <span class="toggle-arrow${arrowIcon}</span>
+            <span class="toggle-arrow">${arrowIcon}</span>
         </caption>
     <thead><tr><th>Atleta</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     tbody.id = tbodyId;
 
     if (startClosed) {
-        tbody.classList.add('hidden'); // Aggiungi la classe 'hidden' se deve partire chiusa
+        tbody.classList.add('hidden'); // CORRETTO: nasconde solo il corpo
     }
 
     Object.entries(grouped).forEach(([id, arr]) => {
@@ -267,14 +267,15 @@ function creaTabellaPerRuolo(dati, titolo, atlete, startClosed = false) {
 
     table.innerHTML = `<caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
-            <span class="toggle-arrow${arrowIcon}</span>
+            <span class="toggle-arrow">${arrowIcon}</span>
         </caption>
     <thead><tr><th>Ruolo</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     tbody.id = tbodyId;
 
+    // La classe 'hidden' va applicata qui, al tbody
     if (startClosed) {
-        tbody.classList.add('hidden'); // Aggiungi la classe 'hidden' se deve partire chiusa
+        tbody.classList.add('hidden');
     }
 
     Object.entries(grouped).forEach(([ruolo, arr]) => {
