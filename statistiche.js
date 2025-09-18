@@ -69,6 +69,7 @@ function creaTabella(dati, titolo, atlete) {
     ${titolo}<span class="toggle-arrow">🔽</span></caption>
     <thead><tr><th>Atleta</th><th>RPE</th><th>Durata</th><th>Data</th></tr></thead>`;
     const tbody = document.createElement("tbody");
+    tbody.id = tbodyId;
 
     dati.forEach(r => {
         const a = atlete.find(a => a.id == r.atleta_id);
@@ -96,6 +97,7 @@ function creaTabellaMedia(dati, titolo, atlete) {
         </caption>
     <thead><tr><th>Atleta</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
+    tbody.id = tbodyId;
 
     Object.entries(grouped).forEach(([id, arr]) => {
         const a = atlete.find(a => a.id == id);
@@ -125,6 +127,7 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
         </caption>
     <thead><tr><th>Atleta</th><th>RPE medio</th><th></th></tr></thead>`;
     const tbody = document.createElement("tbody");
+    tbody.id = tbodyId;
 
     Object.entries(grouped).forEach(([id, arr], i) => {
         const atleta = atlete.find(a => a.id === id);
@@ -242,6 +245,7 @@ function creaTabellaPerRuolo(dati, titolo, atlete) {
         </caption>
     <thead><tr><th>Ruolo</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
+    tbody.id = tbodyId;
 
     Object.entries(grouped).forEach(([ruolo, arr]) => {
         const rpeMedia = media(arr.map(r => +r.rpe_id));
