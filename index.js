@@ -153,7 +153,13 @@ async function salvaDati() {
             allenamento_id,
             timestamp_inserimento: Date.now()
         };
-    });
+    }).filter(rpe => rpe.rpe_id !== null);
+    // filtro in modo da salvare solo gli RPE presenti e non quelli vuoti
+
+    if (nuoviRPE.length === 0) {
+        alert("Nessun voto RPE è stato selezionato. Inserire almeno un voto.");
+        return;
+    }
 
     // ⚠️ controllo se manca qualche voto
     if (nuoviRPE.some(r => !r.rpe_id)) {
