@@ -55,9 +55,9 @@ function renderStatistiche(atlete, rpe_data, rpeList) {
     container.appendChild(creaTabellaUltimiVoti(datiUltimiVoti, "Ultimi Voti Inseriti", rpeList));
     container.appendChild(creaTabella(datiUltimo, "Voti ultimo allenamento", atlete));
     container.appendChild(creaTabellaPerAtleta(rpe_data, "Tutti i voti per atleta", atlete, numeroAllenamentiStagione));
-    container.appendChild(creaTabellaMedia(datiSettimana, "Media ultima settimana", atlete));
-    container.appendChild(creaTabellaMedia(datiMese, "Media ultimo mese", atlete));
-    container.appendChild(creaTabellaPerRuolo(rpe_data, "Media per ruolo", atlete));
+    container.appendChild(creaTabellaMedia(datiSettimana, "Media ultima settimana", atlete, true));
+    container.appendChild(creaTabellaMedia(datiMese, "Media ultimo mese", atlete, true));
+    container.appendChild(creaTabellaPerRuolo(rpe_data, "Media per ruolo", atlete, true));
 
     // --- NUOVA LOGICA PER RENDERE LE TABELLE COLLASSABILI ---
     // Aggiungiamo questo blocco alla fine della funzione
@@ -97,7 +97,7 @@ function creaTabella(dati, titolo, atlete) {
     return table;
 }
 
-function creaTabellaMedia(dati, titolo, atlete) {
+function creaTabellaMedia(dati, titolo, atlete, startClosed = false) {
     const grouped = {};
     dati.forEach(r => {
         if (!grouped[r.atleta_id]) grouped[r.atleta_id] = [];
@@ -114,6 +114,10 @@ function creaTabellaMedia(dati, titolo, atlete) {
     <thead><tr><th>Atleta</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     tbody.id = tbodyId;
+
+    if (startClosed) {
+        tbody.classList.add('hidden'); // Aggiungi la classe 'hidden' se deve partire chiusa
+    }
 
     Object.entries(grouped).forEach(([id, arr]) => {
         const a = atlete.find(a => a.id == id);
@@ -245,7 +249,7 @@ async function eliminaVoto(rpeDbId) {
     }
 }
 
-function creaTabellaPerRuolo(dati, titolo, atlete) {
+function creaTabellaPerRuolo(dati, titolo, atlete, startClosed = false) {
     const grouped = {};
 
     dati.forEach(r => {
@@ -265,6 +269,10 @@ function creaTabellaPerRuolo(dati, titolo, atlete) {
     <thead><tr><th>Ruolo</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
     tbody.id = tbodyId;
+
+    if (startClosed) {
+        tbody.classList.add('hidden'); // Aggiungi la classe 'hidden' se deve partire chiusa
+    }
 
     Object.entries(grouped).forEach(([ruolo, arr]) => {
         const rpeMedia = media(arr.map(r => +r.rpe_id));
