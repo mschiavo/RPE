@@ -63,6 +63,15 @@ function renderStatistiche(atlete, rpe_data, rpeList) {
 
 function creaTabella(dati, titolo, atlete) {
     const table = document.createElement("table");
+    const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
+
+    table.innerHTML = `
+        <caption class="expandable-caption" data-target="${tbodyId}">
+            ${titolo}
+            <span class="toggle-arrow">🔽</span>
+        </caption>
+        <thead><tr><th>Atleta</th><th>Voto</th></tr></thead>`;
+
     table.innerHTML = `<caption>${titolo}</caption>
     <thead><tr><th>Atleta</th><th>RPE</th><th>Durata</th><th>Data</th></tr></thead>`;
     const tbody = document.createElement("tbody");
@@ -85,8 +94,15 @@ function creaTabellaMedia(dati, titolo, atlete) {
     });
 
     const table = document.createElement("table");
-    table.innerHTML = `<caption>${titolo}</caption>
-    <thead><tr><th>Atleta</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
+    const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
+
+    table.innerHTML = `
+        <caption class="expandable-caption" data-target="${tbodyId}">
+            ${titolo}
+            <span class="toggle-arrow">🔽</span>
+        </caption>
+        <thead><tr><th>Atleta</th><th>Voto</th></tr></thead>`;
+
     const tbody = document.createElement("tbody");
 
     Object.entries(grouped).forEach(([id, arr]) => {
@@ -109,8 +125,15 @@ function creaTabellaPerAtleta(dati, titolo, atlete) {
     });
 
     const table = document.createElement("table");
-    table.innerHTML = `<caption>${titolo}</caption>
-    <thead><tr><th>Atleta</th><th>RPE medio</th><th></th></tr></thead>`;
+    const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
+
+    table.innerHTML = `
+        <caption class="expandable-caption" data-target="${tbodyId}">
+            ${titolo}
+            <span class="toggle-arrow">🔽</span>
+        </caption>
+        <thead><tr><th>Atleta</th><th>RPE medio</th><th></th></tr></thead>`;
+
     const tbody = document.createElement("tbody");
 
     Object.entries(grouped).forEach(([id, arr], i) => {
@@ -221,8 +244,14 @@ function creaTabellaPerRuolo(dati, titolo, atlete) {
     });
 
     const table = document.createElement("table");
-    table.innerHTML = `<caption>${titolo}</caption>
-    <thead><tr><th>Ruolo</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
+    const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
+
+    table.innerHTML = `
+        <caption class="expandable-caption" data-target="${tbodyId}">
+            ${titolo}
+            <span class="toggle-arrow">🔽</span>
+        </caption>
+        <thead><tr><th>Ruolo</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
 
     Object.entries(grouped).forEach(([ruolo, arr]) => {
