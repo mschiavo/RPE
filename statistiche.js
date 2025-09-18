@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function fetchData(path) {
     const res = await fetch(`${BASE_URL}/${path}.json`);
     const data = await res.json();
-    return Object.entries(data || {}).map(([id, val]) => ({ ...val, id }));
+    return Object.entries(data || {}).map(([id, val]) => ({...val, id}));
 }
 
 function renderStatistiche(atlete, rpe_data) {

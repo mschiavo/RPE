@@ -57,11 +57,6 @@ if (!logged) {
     statisticheBtn.style.display = logged.profilo === 1 ? 'inline-block' : 'none';
 }
 
-// mostra info utente e logout
-// document.addEventListener('DOMContentLoaded', () => {
-//
-// });
-
 async function fetchData(path) {
     const res = await fetch(`${BASE_URL}/${path}.json`);
     const data = await res.json();
@@ -69,53 +64,6 @@ async function fetchData(path) {
         .filter(([_, val]) => val !== null && typeof val === "object")
         .map(([id, val]) => ({ ...val, id }));
 }
-
-
-// function renderAtleteList(atlete) {
-//     const container = document.getElementById('atlete-list');
-//     container.innerHTML = '';
-//     if (logged.ruolo === 'admin') {
-//         atlete.forEach(a => {
-//             const div = document.createElement('div');
-//             div.textContent = `${a.nome} ${a.cognome}`;
-//             container.appendChild(div);
-//         });
-//     } else if (logged.ruolo === 'athlete') {
-//         const my = atlete.find(a => a.id === logged.atletaId);
-//         if (my) {
-//             const div = document.createElement('div');
-//             div.textContent = `${my.nome} ${my.cognome}`;
-//             container.appendChild(div);
-//         }
-//     }
-// }
-
-// function setupRpeForm(atlete) {
-//     const select = document.getElementById('atletaSelect');
-//     select.innerHTML = '';
-//     if (logged.ruolo === 'admin') {
-//         atlete.forEach(a => {
-//             const opt = document.createElement('option');
-//             opt.value = a.id;
-//             opt.textContent = `${a.nome} ${a.cognome}`;
-//             select.appendChild(opt);
-//         });
-//         select.disabled = false;
-//     } else if (logged.ruolo === 'athlete') {
-//         const my = atlete.find(a => a.id === logged.atletaId);
-//         const opt = document.createElement('option');
-//         opt.value = logged.atletaId;
-//         opt.textContent = `${my.nome} ${my.cognome}`;
-//         select.appendChild(opt);
-//         select.disabled = true;
-//     }
-// }
-
-// function submitRpe(formData) {
-//     if (logged.ruolo === 'athlete') formData.atletaId = logged.atletaId;
-//     // Salva i dati RPE sul DB o JSON come nella versione originale
-//     saveRpe(formData);
-// }
 
 
 function renderAtlete() {
@@ -206,13 +154,11 @@ async function salvaDati() {
         };
     });
 
-    console.log("Nuovi rpe calcolati: " + nuoviRPE);
-
     // ⚠️ controllo se manca qualche voto
     if (nuoviRPE.some(r => !r.rpe_id)) {
-        alert("Seleziona un RPE per ogni atleta");
+        alert("Alcune atlete non hanno un RPE inserito!");
         showLoader(false);
-        return;
+        // return;
     }
 
     // ✅ Salvo su Firebase
@@ -223,7 +169,6 @@ async function salvaDati() {
     showLoader(false);
     alert("Dati salvati!");
 }
-
 
 async function pushData(path, obj) {
     await fetch(`${BASE_URL}/${path}.json`, {
