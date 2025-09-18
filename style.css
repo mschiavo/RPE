@@ -378,3 +378,75 @@ a.btn-link:hover {
 #modal-actions button {
     margin: 0 10px;
 }
+
+/* Aggiungi queste regole al tuo file style.css */
+
+/* Per evidenziare le righe con voti mancanti */
+.highlight-warning {
+    background-color: yellow;
+}
+
+/* Per migliorare lo stile del pulsante di cancellazione */
+.delete-btn {
+    background: none;
+    border: none;
+    padding: 0 0 0 10px; /* Aggiunge un po' di spazio a sinistra */
+    font-size: 1.1em; /* Leggermente più grande per essere più cliccabile */
+    cursor: pointer;
+    color: inherit;
+    vertical-align: middle;
+    opacity: 0.6; /* Leggermente trasparente di default */
+    transition: opacity 0.2s; /* Transizione fluida */
+}
+
+.delete-btn:hover {
+    opacity: 1; /* Opacità piena al passaggio del mouse */
+}
+
+/* Aggiungi/Sostituisci queste regole nel tuo file style.css */
+
+/* Stile del contenitore della lista interna (l'elemento <ul>) */
+.dettagli-atleta {
+    list-style-type: none; /* Rimuove i pallini della lista */
+    padding: 0;
+    margin: 10px 20px; /* Aggiunge un po' di respiro dentro la cella */
+}
+
+/* Stile per ogni riga della lista (l'elemento <li>) */
+.dettagli-atleta li {
+    display: flex;
+    justify-content: space-between; /* Allinea il testo a sx e il bottone a dx */
+    align-items: center; /* Allinea verticalmente gli elementi */
+    padding: 10px 5px; /* Aggiunge spazio sopra e sotto ogni voto */
+    border-bottom: 1px solid #f0f0f0; /* Linea di separazione leggera */
+}
+
+/* Rimuove la linea di separazione dall'ultimo elemento per pulizia */
+.dettagli-atleta li:last-child {
+    border-bottom: none;
+}
+
+/* Stile di base del pulsante di cancellazione */
+.delete-btn {
+    background: transparent; /* Sfondo trasparente */
+    border: 1px solid #d1d5db; /* Bordo grigio chiaro, come gli input */
+    color: #6b7280; /* Testo grigio scuro, per non essere troppo invadente */
+    border-radius: 6px; /* Angoli arrotondati, in linea con il sito */
+    padding: 0.3rem 0.6rem; /* Padding interno per dargli respiro */
+    font-size: 1em; /* Dimensione del cestino */
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    /* Transizione fluida per tutti gli effetti */
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+/* Effetto al passaggio del mouse */
+.delete-btn:hover {
+    background-color: #fee2e2; /* Sfondo rosso molto leggero */
+    color: #b91c1c; /* Icona rosso scuro */
+    border-color: #fca5a5; /* Bordo rosso chiaro */
+    transform: translateY(-1px); /* Leggero sollevamento, come gli altri bottoni */
+}

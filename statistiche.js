@@ -142,8 +142,6 @@ function creaTabellaPerAtleta(dati, titolo, atlete, numeroAllenamentiTotali) {
     const table = document.createElement("table");
     const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
 
-
-    // 1. Aggiungiamo la nuova colonna "Presenze" nell'intestazione
     table.innerHTML = `<caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
             <span class="toggle-arrow">🔽</span>
@@ -165,8 +163,11 @@ function creaTabellaPerAtleta(dati, titolo, atlete, numeroAllenamentiTotali) {
             .sort((a, b) => parseDate(b.data) - parseDate(a.data))
             .slice(0, 10);
 
+        const isMissingVotes = arr.length < numeroAllenamentiTotali;
+        const rowClass = isMissingVotes ? 'expandable highlight-warning' : 'expandable';
+
         tbody.innerHTML += `
-          <tr class="expandable" data-target="${subId}">
+          <tr class="${rowClass}" data-target="${subId}">
             <td>${atletaLabel}</td>
             <td>${mediaRpe}</td>
             <td>${arr.length} / ${numeroAllenamentiTotali}</td>
