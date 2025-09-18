@@ -106,10 +106,11 @@ function creaTabellaMedia(dati, titolo, atlete, startClosed = false) {
 
     const table = document.createElement("table");
     const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
+    const arrowIcon = startClosed ? '▶️' : '🔽';
 
     table.innerHTML = `<caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
-            <span class="toggle-arrow">🔽</span>
+            <span class="toggle-arrow${arrowIcon}</span>
         </caption>
     <thead><tr><th>Atleta</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
@@ -259,12 +260,14 @@ function creaTabellaPerRuolo(dati, titolo, atlete, startClosed = false) {
         grouped[ruolo].push(r);
     });
 
+    const arrowIcon = startClosed ? '▶️' : '🔽';
+
     const table = document.createElement("table");
     const tbodyId = `tbody-${titolo.replace(/\s+/g, '-').toLowerCase()}`; // Crea un ID univoco dal titolo
 
     table.innerHTML = `<caption class="expandable-caption" data-target="${tbodyId}">
             ${titolo}
-            <span class="toggle-arrow">🔽</span>
+            <span class="toggle-arrow${arrowIcon}</span>
         </caption>
     <thead><tr><th>Ruolo</th><th>RPE medio</th><th>Durata media</th></tr></thead>`;
     const tbody = document.createElement("tbody");
