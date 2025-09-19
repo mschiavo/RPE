@@ -83,3 +83,18 @@
 .delete-btn-voto:hover {
     background-color: #dc2626; /* Rosso più scuro */
 }
+
+/* Stile per il contenitore del pulsante del form */
+.text-align-right {
+    text-align: right;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* Contenitore per le azioni sui voti orfani */
+.azione-voto-orfano {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
