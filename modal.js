@@ -63,9 +63,9 @@ function showMessage(message) {
         modalMessage.textContent = message;
 
         // Mostra solo il pulsante "OK"
-        btnConfirm.style.display = 'none';
-        btnCancel.style.display = 'none';
-        btnOk.style.display = 'inline-block';
+        btnOk.classList.remove('hidden');
+        btnConfirm.classList.add('hidden');
+        btnCancel.classList.add('hidden');
 
         // Mostra la modale
         modalOverlay.classList.remove('hidden');
