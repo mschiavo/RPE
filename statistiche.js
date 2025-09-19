@@ -230,18 +230,44 @@ async function eliminaVoto(rpeDbId) {
         return;
     }
 
-    showLoader(true);
+    howLoader(true);
     try {
-        const res = await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, {
-            method: 'DELETE'
-        });
+        // 1. Recuperiamo i dettagli del voto che stiamo per cancellare (ci serve la data)
+        const votoRes = await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`);
+        const votoDaCancellare = await votoRes.json();
 
-        if (!res.ok) {
-            throw new Error("La richiesta di eliminazione è fallita.");
+        if (!votoDaCancellare) {
+            throw new Error("Voto non trovato, potrebbe essere già stato eliminato.");
+        }
+        const dataAllenamento = votoDaCancellare.data;
+
+        // 2. Eliminiamo il voto specifico
+        await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, { method: 'DELETE' });
+
+        // 3. Controlliamo se esistono altri voti per quella stessa data
+        // Usiamo le query di Firebase per filtrare per data (orderBy="data"&equalTo="...")
+        const queryUrl = `${BASE_URL}/rpe_data.json?orderBy="data"&equalTo="${dataAllenamento}"`;
+        const altriVotiRes = await fetch(queryUrl);
+        const altriVoti = await altriVotiRes.json();
+
+        // 4. Se l'oggetto `altriVoti` è vuoto (null), significa che non ci sono più voti per quella data
+        if (!altriVoti || Object.keys(altriVoti).length === 0) {
+            console.log(`Nessun altro voto trovato per la data ${dataAllenamento}. Rimuovo l'allenamento orfano.`);
+
+            // Troviamo l'ID dell'allenamento da cancellare usando la stessa tecnica di query
+            const allenamentiRes = await fetch(`${BASE_URL}/allenamenti.json?orderBy="data"&equalTo="${dataAllenamento}"`);
+            const allenamentiTrovati = await allenamentiRes.json();
+
+            if (allenamentiTrovati && Object.keys(allenamentiTrovati).length > 0) {
+                const allenamentoId = Object.keys(allenamentiTrovati)[0];
+                // Cancelliamo l'allenamento vuoto
+                await fetch(`${BASE_URL}/allenamenti/${allenamentoId}.json`, { method: 'DELETE' });
+                console.log(`Allenamento ${allenamentoId} eliminato.`);
+            }
         }
 
-        alert("Voto eliminato con successo!");
-        location.reload(); // Ricarichiamo la pagina per vedere i dati aggiornati
+        await showMessage("Voto eliminato con successo. La pagina verrà ricaricata.");
+        location.reload();
 
     } catch (error) {
         console.error("Errore durante l'eliminazione del voto:", error);
