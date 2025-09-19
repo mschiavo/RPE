@@ -185,7 +185,7 @@ async function eliminaAllenamento(workoutDate) {
         }
 
         await showMessage("Allenamento eliminato con successo. La pagina verrà ricaricata.");
-        location.reload();
+        loadAdminData();
 
     } catch (error) {
         console.error("Errore durante l'eliminazione dell'allenamento:", error);
@@ -233,7 +233,7 @@ async function gestisciAggiuntaAllenamento(event) {
         }
 
         await showMessage("Nuovo allenamento creato con successo! La pagina verrà ricaricata.");
-        location.reload();
+        loadAdminData();
 
     } catch (error) {
         console.error("Errore nella creazione dell'allenamento:", error);
@@ -242,6 +242,8 @@ async function gestisciAggiuntaAllenamento(event) {
         showLoader(false);
     }
 }
+
+
 
 function showLoader(show) {
     const loader = document.getElementById("overlay-loader");
