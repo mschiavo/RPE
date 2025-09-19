@@ -219,7 +219,9 @@ async function gestisciAggiuntaAllenamento(event) {
 
         // 2. Se non esiste, creiamo il nuovo allenamento
         const nuovoAllenamento = {
-            data: dataFormattata
+            data: dataFormattata,
+            durata: "120",
+            id: Date.now().toString()
         };
 
         const postRes = await fetch(`${BASE_URL}/allenamenti.json`, {
