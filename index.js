@@ -14,9 +14,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (userSpan) {
         if (logged.profilo === 1) {
             userSpan.textContent = "Admin";
-        }
-        else
-        {
+        } else {
             atleteDaMostrare = atlete.filter(a => a.id == logged.atletaId);
             if (atleteDaMostrare.length > 0)
                 userSpan.textContent = atleteDaMostrare[0].nome + " " + atleteDaMostrare[0].cognome;
@@ -24,6 +22,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 userSpan.textContent = "";
         }
     }
+
+    // ===== INIZIO CODICE DA AGGIUNGERE =====
+    // Nasconde la barra di navigazione se l'utente non è un admin
+    const navMenu = document.querySelector('nav');
+    if (navMenu && logged.profilo !== 1) {
+        navMenu.style.display = 'none';
+    }
+    // ===== FINE CODICE DA AGGIUNGERE =====
 
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -53,8 +59,8 @@ if (!logged) {
         window.location.href = 'login.html';
     }
 
-    const statisticheBtn = document.getElementById('statisticheBtn');
-    statisticheBtn.style.display = logged.profilo === 1 ? 'inline-block' : 'none';
+    // const statisticheBtn = document.getElementById('statisticheBtn');
+    // statisticheBtn.style.display = logged.profilo === 1 ? 'inline-block' : 'none';
 }
 
 async function fetchData(path) {
@@ -62,7 +68,7 @@ async function fetchData(path) {
     const data = await res.json();
     return Object.entries(data || {})
         .filter(([_, val]) => val !== null && typeof val === "object")
-        .map(([id, val]) => ({ ...val, id }));
+        .map(([id, val]) => ({...val, id}));
 }
 
 
@@ -180,7 +186,7 @@ async function salvaDati() {
 async function pushData(path, obj) {
     await fetch(`${BASE_URL}/${path}.json`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify(obj)
     });
 }
