@@ -166,17 +166,15 @@ function creaTabellaAllenamenti(datiAllenamenti, atlete) {
  * Elimina un allenamento VUOTO.
  */
 async function eliminaAllenamento(workoutDate) {
-    // --- MODIFICA: Messaggio di conferma semplificato ---
     const confermato = await showConfirm(`Sei sicuro di voler eliminare l'allenamento vuoto del ${workoutDate}?`);
     if (!confermato) return;
 
     showLoader(true);
     try {
-        // 1. Trova l'allenamento da cancellare
+        // 1. Trova e cancella l'allenamento
         const allenamentiRes = await fetch(`${BASE_URL}/allenamenti.json?orderBy="data"&equalTo="${workoutDate}"`);
         const allenamentiTrovati = await allenamentiRes.json();
 
-        // --- MODIFICA: Rimuoviamo la logica di cancellazione dei voti ---
         if (allenamentiTrovati) {
             const allenamentoId = Object.keys(allenamentiTrovati)[0];
             await fetch(`${BASE_URL}/allenamenti/${allenamentoId}.json`, { method: 'DELETE' });
@@ -184,45 +182,49 @@ async function eliminaAllenamento(workoutDate) {
             throw new Error("Nessun allenamento da eliminare trovato per questa data.");
         }
 
-        await showMessage("Allenamento eliminato con successo. La pagina verrà ricaricata.");
-        loadAdminData();
-        showLoader(false);
+        // 2. Ricarica i dati della tabella (che gestirà il loader)
+        await loadAdminData();
+
+        // 3. Mostra il messaggio di successo DOPO che tutto è stato ricaricato
+        await showMessage("Allenamento eliminato con successo.");
 
     } catch (error) {
         console.error("Errore durante l'eliminazione dell'allenamento:", error);
-        await showMessage(`Errore: ${error.message}`);
-    } finally {
+        // In caso di errore, nascondiamo il loader e mostriamo il messaggio
         showLoader(false);
+        await showMessage(`Errore: ${error.message}`);
     }
+    // Rimuoviamo il blocco 'finally' perché la gestione del loader è ora interna al try/catch
 }
+
 
 /**
  * Gestisce la sottomissione del form per creare un nuovo allenamento.
  */
 async function gestisciAggiuntaAllenamento(event) {
-    event.preventDefault(); // Impedisce il ricaricamento della pagina
+    event.preventDefault();
     showLoader(true);
 
     const dateInput = document.getElementById('data-nuovo-allenamento');
-    // Il valore dall'input date è in formato YYYY-MM-DD, lo convertiamo in YYYY/MM/DD
     const dataFormattata = dateInput.value.replace(/-/g, '/');
 
     try {
-        // 1. Controlliamo se esiste già un allenamento per questa data per evitare duplicati
+        // 1. Controlla duplicati
         const queryUrl = `${BASE_URL}/allenamenti.json?orderBy="data"&equalTo="${dataFormattata}"`;
         const res = await fetch(queryUrl);
         const allenamentiEsistenti = await res.json();
 
         if (allenamentiEsistenti && Object.keys(allenamentiEsistenti).length > 0) {
+            // Se esiste già, mostra errore e ferma tutto
+            showLoader(false);
             await showMessage(`Errore: Esiste già un allenamento per la data ${dataFormattata}.`);
-            return; // Interrompe l'esecuzione
+            return;
         }
 
-        // 2. Se non esiste, creiamo il nuovo allenamento
+        // 2. Crea il nuovo allenamento
         const nuovoAllenamento = {
-            data: dataFormattata,
-            durata: "120",
-            id: Date.now().toString()
+            data: dataFormattata
+            // Rimosso id e durata per coerenza con la struttura dati
         };
 
         const postRes = await fetch(`${BASE_URL}/allenamenti.json`, {
@@ -235,16 +237,20 @@ async function gestisciAggiuntaAllenamento(event) {
             throw new Error("Qualcosa è andato storto durante la creazione dell'allenamento.");
         }
 
-        await showMessage("Nuovo allenamento creato con successo! La pagina verrà ricaricata.");
-        loadAdminData();
-        showLoader(false);
+        // 3. Pulisci il form e ricarica la tabella
+        dateInput.value = '';
+        await loadAdminData();
+
+        // 4. Mostra il messaggio di successo alla fine
+        await showMessage("Nuovo allenamento creato con successo!");
 
     } catch (error) {
         console.error("Errore nella creazione dell'allenamento:", error);
-        await showMessage(`Errore: ${error.message}`);
-    } finally {
+        // In caso di errore, nascondiamo il loader e mostriamo il messaggio
         showLoader(false);
+        await showMessage(`Errore: ${error.message}`);
     }
+    // Rimuoviamo il blocco 'finally'
 }
 
 
