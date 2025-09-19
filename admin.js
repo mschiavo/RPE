@@ -253,7 +253,211 @@ async function gestisciAggiuntaAllenamento(event) {
     // Rimuoviamo il blocco 'finally'
 }
 
+// in admin.js
 
+async function loadAdminData() {
+    showLoader(true);
+    try {
+        // I dati vengono già recuperati tutti qui
+        const [allenamenti, rpeData, atlete] = await Promise.all([
+            fetchData("allenamenti"),
+            fetchData("rpe_data"),
+            fetchData("atlete")
+        ]);
+
+        // --- 1. Gestione Tabella Allenamenti (invariata) ---
+        const processedData = processWorkoutData(allenamenti, rpeData);
+        const container = document.getElementById("admin-container");
+        container.innerHTML = '';
+        container.appendChild(creaTabellaAllenamenti(processedData, atlete));
+
+        // --- 2. NUOVA GESTIONE: Tabella Voti Orfani ---
+        const votiOrfani = processOrphanVotes(allenamenti, rpeData);
+        const containerOrfani = document.getElementById("voti-orfani-container");
+        containerOrfani.innerHTML = ''; // Pulisce il contenitore
+
+        if (votiOrfani.length > 0) {
+            containerOrfani.appendChild(creaTabellaVotiOrfani(votiOrfani, atlete));
+        } else {
+            containerOrfani.innerHTML = '<h2>Voti Orfani</h2><p>Nessun voto non collegato a un allenamento. Ottimo!</p>';
+        }
+
+    } catch (error) {
+        console.error("Errore nel caricamento dei dati admin:", error);
+        document.getElementById("admin-container").innerHTML = `<p class="error">Impossibile caricare i dati.</p>`;
+    } finally {
+        showLoader(false);
+    }
+}
+
+
+/**
+ * Identifica i voti RPE che non hanno un allenamento corrispondente.
+ * @param {Array} allenamenti - L'array di tutti gli allenamenti.
+ * @param {Array} rpeData - L'array di tutti i voti.
+ * @returns {Array} Un array contenente solo i voti orfani.
+ */
+function processOrphanVotes(allenamenti, rpeData) {
+    // Creiamo un Set con tutte le date degli allenamenti esistenti per una ricerca veloce
+    const dateAllenamenti = new Set(allenamenti.map(a => a.data));
+    // Filtriamo i voti: teniamo solo quelli la cui data NON è presente nel Set
+    return rpeData.filter(voto => !dateAllenamenti.has(voto.data));
+}
+
+// in admin.js
+
+/**
+ * Crea la tabella HTML per i voti orfani.
+ * @param {Array} votiOrfani - L'array dei voti da mostrare.
+ * @param {Array} atlete - L'array di tutte le atlete per trovare i nomi.
+ * @param {Array} allenamenti - L'array di tutti gli allenamenti per il dropdown.
+ */
+function creaTabellaVotiOrfani(votiOrfani, atlete, allenamenti) {
+    const table = document.createElement("table");
+    table.innerHTML = `
+        <caption>Voti Orfani (non collegati a un allenamento)</caption>
+        <thead>
+            <tr>
+                <th>Atleta</th>
+                <th>Data Voto</th>
+                <th>RPE</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+    `;
+    const tbody = document.createElement("tbody");
+
+    // Crea le opzioni per il menu a tendina una sola volta
+    const opzioniAllenamenti = allenamenti
+        .map(a => `<option value="${a.data}">${a.data}</option>`)
+        .join('');
+
+    votiOrfani.forEach(voto => {
+        const atleta = atlete.find(a => a.id === voto.atleta_id);
+        const nomeAtleta = atleta ? `${atleta.nome} ${atleta.cognome}` : 'Atleta Sconosciuta';
+
+        tbody.innerHTML += `
+            <tr>
+                <td>${nomeAtleta}</td>
+                <td>${voto.data}</td>
+                <td><strong>${voto.rpe_id}</strong></td>
+                <td>
+                    <div class="azione-voto-orfano">
+                        <select class="select-allenamento" data-rpe-id="${voto.id}">
+                            <option value="" selected disabled>Assegna a...</option>
+                            ${opzioniAllenamenti}
+                        </select>
+                        <button class="assign-btn-voto" data-rpe-id="${voto.id}" title="Assegna a questo allenamento" disabled>✔️</button>
+                        <button class="delete-btn-voto" data-rpe-id="${voto.id}" title="Elimina questo voto">🗑️</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+
+    table.appendChild(tbody);
+
+    // Aggiunge i listener dopo che la tabella è nel DOM
+    table.querySelectorAll('.select-allenamento').forEach(select => {
+        select.addEventListener('change', () => {
+            // Abilita il pulsante "Assegna" corrispondente quando viene selezionata una data
+            const rpeId = select.dataset.rpeId;
+            const assignBtn = table.querySelector(`.assign-btn-voto[data-rpe-id="${rpeId}"]`);
+            if (assignBtn) {
+                assignBtn.disabled = false;
+            }
+        });
+    });
+
+    table.querySelectorAll('.assign-btn-voto').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const rpeId = btn.dataset.rpeId;
+            const select = table.querySelector(`.select-allenamento[data-rpe-id="${rpeId}"]`);
+            if (select && select.value) {
+                assegnaVotoAdAllenamento(rpeId, select.value);
+            }
+        });
+    });
+
+    table.querySelectorAll('.delete-btn-voto').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const rpeId = btn.dataset.rpeId;
+            eliminaVotoOrfano(rpeId);
+        });
+    });
+
+    return table;
+}
+
+// in admin.js
+
+async function loadAdminData() {
+    showLoader(true);
+    try {
+        const [allenamenti, rpeData, atlete] = await Promise.all([
+            fetchData("allenamenti"),
+            fetchData("rpe_data"),
+            fetchData("atlete")
+        ]);
+
+        // ... gestione tabella allenamenti (invariata) ...
+        const processedData = processWorkoutData(allenamenti, rpeData);
+        const container = document.getElementById("admin-container");
+        container.innerHTML = '';
+        container.appendChild(creaTabellaAllenamenti(processedData, atlete));
+
+        // --- MODIFICA QUI ---
+        const votiOrfani = processOrphanVotes(allenamenti, rpeData);
+        const containerOrfani = document.getElementById("voti-orfani-container");
+        containerOrfani.innerHTML = '';
+
+        if (votiOrfani.length > 0) {
+            // Passiamo anche l'array 'allenamenti' alla funzione
+            containerOrfani.appendChild(creaTabellaVotiOrfani(votiOrfani, atlete, allenamenti));
+        } else {
+            containerOrfani.innerHTML = '<h2>Voti Orfani</h2><p>Nessun voto non collegato a un allenamento. Ottimo!</p>';
+        }
+        // --- FINE MODIFICA ---
+
+    } catch (error) {
+        console.error("Errore nel caricamento dei dati admin:", error);
+        document.getElementById("admin-container").innerHTML = `<p class="error">Impossibile caricare i dati.</p>`;
+    } finally {
+        showLoader(false);
+    }
+}
+
+// in admin.js
+
+/**
+ * Assegna un voto orfano a un allenamento esistente aggiornando la sua data.
+ * @param {string} rpeDbId - L'ID del voto da aggiornare.
+ * @param {string} nuovaData - La nuova data (YYYY/MM/DD) a cui assegnare il voto.
+ */
+async function assegnaVotoAdAllenamento(rpeDbId, nuovaData) {
+    const confermato = await showConfirm(`Sei sicuro di voler assegnare questo voto all'allenamento del ${nuovaData}?`);
+    if (!confermato) return;
+
+    showLoader(true);
+    try {
+        // Usiamo il metodo PATCH per aggiornare solo il campo 'data'
+        await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: nuovaData })
+        });
+
+        // Ricarichiamo tutti i dati per aggiornare entrambe le tabelle
+        await loadAdminData();
+
+        await showMessage("Voto assegnato con successo.");
+
+    } catch (error) {
+        console.error("Errore durante l'assegnazione del voto:", error);
+        showLoader(false);
+        await showMessage(`Errore: ${error.message}`);
+    }
+}
 
 function showLoader(show) {
     const loader = document.getElementById("overlay-loader");

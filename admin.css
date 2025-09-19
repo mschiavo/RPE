@@ -4,3 +4,85 @@
     cursor: not-allowed; /* Cursore "non permesso" */
     opacity: 0.7;
 }
+
+/* Separatore tra le sezioni */
+.section-divider {
+    border: none;
+    border-top: 2px solid #e5e7eb; /* Grigio chiaro */
+    margin: 2rem 0;
+}
+
+/* Stile per il pulsante di eliminazione del singolo voto */
+.delete-btn-voto {
+    background-color: transparent;
+    border: 1px solid #ef4444; /* Bordo rosso */
+    color: #ef4444; /* Testo rosso */
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.delete-btn-voto:hover {
+    background-color: #ef4444; /* Rosso pieno */
+    color: white;
+}
+
+/* in admin.css */
+
+/* ... stili esistenti ... */
+
+/* Contenitore per le azioni sui voti orfani */
+.azione-voto-orfano {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; /* Spazio tra gli elementi */
+}
+
+/* Stile per il menu a tendina */
+.select-allenamento {
+    padding: 0.3rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Stile per il nuovo pulsante "Assegna" */
+.assign-btn-voto {
+    background-color: #22c55e; /* Verde */
+    color: white;
+    border: none;
+    padding: 0.4rem;
+    width: 32px; /* Larghezza fissa */
+    height: 32px; /* Altezza fissa */
+    border-radius: 50%; /* Cerchio */
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+
+.assign-btn-voto:hover:not(:disabled) {
+    background-color: #16a34a; /* Verde più scuro */
+}
+
+.assign-btn-voto:disabled {
+    background-color: #d1d5db; /* Grigio */
+    cursor: not-allowed;
+}
+
+/* Modifichiamo il pulsante di cancellazione per renderlo un'icona */
+.delete-btn-voto {
+    background-color: #ef4444; /* Rosso */
+    color: white;
+    border: none;
+    padding: 0.4rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.delete-btn-voto:hover {
+    background-color: #dc2626; /* Rosso più scuro */
+}
