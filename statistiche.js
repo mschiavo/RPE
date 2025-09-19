@@ -217,61 +217,25 @@ function creaTabellaPerAtleta(dati, titolo, atlete, numeroAllenamentiTotali) {
     return table;
 }
 
-/**
- * Elimina una specifica registrazione RPE dal database.
- * @param {string} rpeDbId - L'ID univoco del record RPE da eliminare.
- */
 async function eliminaVoto(rpeDbId) {
-    if (!rpeDbId) return;
-
-    // Usiamo il nuovo modale di conferma
-    const confermato = await showConfirm("Sei sicuro di voler eliminare definitivamente questo voto?");
-    if (!confermato) {
-        return;
-    }
+    // 1. Chiediamo conferma all'utente
+    const confermato = await showConfirm("Sei sicuro di voler eliminare questo voto? L'azione è irreversibile.");
+    if (!confermato) return;
 
     showLoader(true);
     try {
-        // 1. Recuperiamo i dettagli del voto che stiamo per cancellare (ci serve la data)
-        const votoRes = await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`);
-        const votoDaCancellare = await votoRes.json();
+        // 2. Eliminiamo il voto specifico. Non ci sono più controlli sull'allenamento.
+        await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, {
+            method: 'DELETE'
+        });
 
-        if (!votoDaCancellare) {
-            throw new Error("Voto non trovato, potrebbe essere già stato eliminato.");
-        }
-        const dataAllenamento = votoDaCancellare.data;
-
-        // 2. Eliminiamo il voto specifico
-        await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, { method: 'DELETE' });
-
-        // 3. Controlliamo se esistono altri voti per quella stessa data
-        // Usiamo le query di Firebase per filtrare per data (orderBy="data"&equalTo="...")
-        const queryUrl = `${BASE_URL}/rpe_data.json?orderBy="data"&equalTo="${dataAllenamento}"`;
-        const altriVotiRes = await fetch(queryUrl);
-        const altriVoti = await altriVotiRes.json();
-
-        // 4. Se l'oggetto `altriVoti` è vuoto (null), significa che non ci sono più voti per quella data
-        if (!altriVoti || Object.keys(altriVoti).length === 0) {
-            console.log(`Nessun altro voto trovato per la data ${dataAllenamento}. Rimuovo l'allenamento orfano.`);
-
-            // Troviamo l'ID dell'allenamento da cancellare usando la stessa tecnica di query
-            const allenamentiRes = await fetch(`${BASE_URL}/allenamenti.json?orderBy="data"&equalTo="${dataAllenamento}"`);
-            const allenamentiTrovati = await allenamentiRes.json();
-
-            if (allenamentiTrovati && Object.keys(allenamentiTrovati).length > 0) {
-                const allenamentoId = Object.keys(allenamentiTrovati)[0];
-                // Cancelliamo l'allenamento vuoto
-                await fetch(`${BASE_URL}/allenamenti/${allenamentoId}.json`, { method: 'DELETE' });
-                console.log(`Allenamento ${allenamentoId} eliminato.`);
-            }
-        }
-
+        // 3. Mostra messaggio e ricarica la pagina
         await showMessage("Voto eliminato con successo. La pagina verrà ricaricata.");
         location.reload();
 
     } catch (error) {
         console.error("Errore durante l'eliminazione del voto:", error);
-        alert("Si è verificato un errore durante l'eliminazione.");
+        await showMessage(`Errore: ${error.message}`);
     } finally {
         showLoader(false);
     }
