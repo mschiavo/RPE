@@ -224,21 +224,22 @@ async function eliminaVoto(rpeDbId) {
 
     showLoader(true);
     try {
-        // 2. Eliminiamo il voto specifico. Non ci sono più controlli sull'allenamento.
+        // 2. Eliminiamo il voto specifico.
         await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, {
             method: 'DELETE'
         });
 
-        // 3. Mostra messaggio e ricarica la pagina
+        // 3. Mostra messaggio e poi ricarica la pagina
         await showMessage("Voto eliminato con successo. La pagina verrà ricaricata.");
         location.reload();
 
     } catch (error) {
         console.error("Errore durante l'eliminazione del voto:", error);
-        await showMessage(`Errore: ${error.message}`);
-    } finally {
+        // In caso di errore, NASCONDIAMO il loader prima di mostrare il messaggio
         showLoader(false);
+        await showMessage(`Errore: ${error.message}`);
     }
+    // Abbiamo rimosso il blocco 'finally' perché non è più necessario
 }
 
 function creaTabellaPerRuolo(dati, titolo, atlete, startClosed = false) {
