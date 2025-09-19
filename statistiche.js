@@ -1,4 +1,4 @@
-const BASE_URL = "https://rpe-app-49320-default-rtdb.europe-west1.firebasedatabase.app/";
+const BASE_URL = "https://rpe-app-49320-default-rtdb.europe-west1.firebasedatabase.app";
 const parseDate = d => new Date(d + "T00:00:00");
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -230,7 +230,7 @@ async function eliminaVoto(rpeDbId) {
         return;
     }
 
-    howLoader(true);
+    showLoader(true);
     try {
         // 1. Recuperiamo i dettagli del voto che stiamo per cancellare (ci serve la data)
         const votoRes = await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`);
