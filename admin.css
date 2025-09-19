@@ -51,13 +51,10 @@
     background-color: #22c55e; /* Verde */
     color: white;
     border: none;
-    padding: 0.4rem;
-    width: 32px; /* Larghezza fissa */
-    height: 32px; /* Altezza fissa */
-    border-radius: 50%; /* Cerchio */
+    padding: 0.5rem 1rem; /* Usa padding invece di dimensioni fisse */
+    border-radius: 6px; /* Bordo arrotondato standard */
     cursor: pointer;
-    font-size: 1rem;
-    line-height: 1;
+    font-weight: bold;
     transition: background-color 0.2s;
 }
 
@@ -68,19 +65,19 @@
 .assign-btn-voto:disabled {
     background-color: #d1d5db; /* Grigio */
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
-/* Modifichiamo il pulsante di cancellazione per renderlo un'icona */
+/* Modifichiamo il pulsante di cancellazione per renderlo uguale agli altri */
 .delete-btn-voto {
     background-color: #ef4444; /* Rosso */
     color: white;
     border: none;
-    padding: 0.4rem;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-size: 1rem;
-    line-height: 1;
+    padding: 0.5rem 1rem; /* Usa padding invece di dimensioni fisse */
+    border-radius: 6px; /* Bordo arrotondato standard */
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
 }
 
 .delete-btn-voto:hover {

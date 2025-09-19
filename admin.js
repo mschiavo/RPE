@@ -41,7 +41,7 @@ async function loadAdminData() {
 async function fetchData(path) {
     const res = await fetch(`${BASE_URL}/${path}.json`);
     const data = await res.json();
-    return Object.entries(data || {}).map(([id, val]) => ({ ...val, id }));
+    return Object.entries(data || {}).map(([id, val]) => ({...val, id}));
 }
 
 /**
@@ -70,6 +70,7 @@ function processWorkoutData(allenamenti, rpeData) {
 /**
  * Crea la tabella HTML per gli allenamenti.
  */
+
 // in admin.js
 
 /**
@@ -177,7 +178,7 @@ async function eliminaAllenamento(workoutDate) {
 
         if (allenamentiTrovati) {
             const allenamentoId = Object.keys(allenamentiTrovati)[0];
-            await fetch(`${BASE_URL}/allenamenti/${allenamentoId}.json`, { method: 'DELETE' });
+            await fetch(`${BASE_URL}/allenamenti/${allenamentoId}.json`, {method: 'DELETE'});
         } else {
             throw new Error("Nessun allenamento da eliminare trovato per questa data.");
         }
@@ -229,7 +230,7 @@ async function gestisciAggiuntaAllenamento(event) {
 
         const postRes = await fetch(`${BASE_URL}/allenamenti.json`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(nuovoAllenamento)
         });
 
@@ -335,7 +336,6 @@ function creaTabellaVotiOrfani(votiOrfani, atlete, allenamenti) {
     votiOrfani.forEach(voto => {
         const atleta = atlete.find(a => a.id === voto.atleta_id);
         const nomeAtleta = atleta ? `${atleta.nome} ${atleta.cognome}` : 'Atleta Sconosciuta';
-
         tbody.innerHTML += `
             <tr>
                 <td>${nomeAtleta}</td>
@@ -347,8 +347,9 @@ function creaTabellaVotiOrfani(votiOrfani, atlete, allenamenti) {
                             <option value="" selected disabled>Assegna a...</option>
                             ${opzioniAllenamenti}
                         </select>
-                        <button class="assign-btn-voto" data-rpe-id="${voto.id}" title="Assegna a questo allenamento" disabled>✔️</button>
-                        <button class="delete-btn-voto" data-rpe-id="${voto.id}" title="Elimina questo voto">🗑️</button>
+                        
+                        <button class="assign-btn-voto" data-rpe-id="${voto.id}" title="Assegna a questo allenamento" disabled>✔️ Assegna</button>
+                        <button class="delete-btn-voto" data-rpe-id="${voto.id}" title="Elimina questo voto">🗑️ Elimina</button>
                     </div>
                 </td>
             </tr>
@@ -443,8 +444,8 @@ async function assegnaVotoAdAllenamento(rpeDbId, nuovaData) {
         // Usiamo il metodo PATCH per aggiornare solo il campo 'data'
         await fetch(`${BASE_URL}/rpe_data/${rpeDbId}.json`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: nuovaData })
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({data: nuovaData})
         });
 
         // Ricarichiamo tutti i dati per aggiornare entrambe le tabelle
