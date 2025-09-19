@@ -1,0 +1,6 @@
+/* Stile per il pulsante di eliminazione allenamento disabilitato */
+.delete-btn-allenamento:disabled {
+    background-color: #9ca3af; /* Grigio */
+    cursor: not-allowed; /* Cursore "non permesso" */
+    opacity: 0.7;
+}

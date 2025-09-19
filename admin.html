@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - RPE App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header>
+    Pannello Admin
+</header>
+<nav>
+    <a href="index.html" class="link-navigazione">Inserimento RPE</a>
+    <a href="statistiche.html" class="link-navigazione">Statistiche</a>
+    <!--        <a href="gestione-atlete.html">Gestione Atlete</a>-->
+    <a href="grafici.html" class="link-navigazione">Grafici</a>
+    <!--        <a href="admin.html" class="active">Admin</a>-->
+</nav>
+
+
+<main>
+    <section class="form-container">
+        <h2>Aggiungi Nuovo Allenamento</h2>
+        <form id="form-nuovo-allenamento">
+            <fieldset>
+                <legend>Dati Allenamento</legend>
+                <div class="form-group">
+                    <label for="data-nuovo-allenamento">Data Allenamento:</label>
+                    <input type="date" id="data-nuovo-allenamento" required>
+                </div>
+                <button type="submit" class="btn-save">Crea Allenamento</button>
+            </fieldset>
+        </form>
+    </section>
+
+    <div id="admin-container">
+        <!-- La tabella degli allenamenti verrà iniettata qui dal JS -->
+    </div>
+</main>
+
+<!-- Loader (lo stesso delle altre pagine) -->
+<div id="overlay-loader" class="hidden">
+    <div class="loader-spinner"></div>
+    <span>Caricamento dati...</span>
+</div>
+
+<!-- Modale di conferma (la stessa delle altre pagine) -->
+<div id="modal-overlay" class="hidden">
+    <div id="modal-box">
+        <p id="modal-message"></p>
+        <div id="modal-actions">
+            <button id="modal-btn-confirm" class="btn-save">Conferma</button>
+            <button id="modal-btn-cancel" class="btn-cancel">Annulla</button>
+            <button id="modal-btn-ok" class="btn-save">OK</button>
+        </div>
+    </div>
+</div>
+
+<!-- Script JS alla fine del body -->
+<script src="modal.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

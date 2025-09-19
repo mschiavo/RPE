@@ -50,3 +50,33 @@ function showConfirm(message) {
         }, { once: true });
     });
 }
+
+/**
+ * Mostra una finestra di dialogo con un messaggio e un pulsante "OK".
+ * Restituisce una Promise che si risolve quando l'utente clicca "OK".
+ * @param {string} message - Il messaggio da mostrare.
+ * @returns {Promise<void>}
+ */
+function showMessage(message) {
+    return new Promise(resolve => {
+        // Imposta il messaggio
+        modalMessage.textContent = message;
+
+        // Mostra solo il pulsante "OK"
+        btnConfirm.style.display = 'none';
+        btnCancel.style.display = 'none';
+        btnOk.style.display = 'inline-block';
+
+        // Mostra la modale
+        modalOverlay.classList.remove('hidden');
+
+        // Gestore di eventi
+        const okHandler = () => {
+            modalOverlay.classList.add('hidden');
+            btnOk.removeEventListener('click', okHandler); // Pulizia
+            resolve();
+        };
+
+        btnOk.addEventListener('click', okHandler);
+    });
+}
